@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnLogic Pro - Categorized Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #212529; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); padding-bottom: 80px; }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; border-radius: 0 0 20px 20px; }
+        
+        /* ক্যাটাগরি বার */
+        .category-scroll { display: flex; overflow-x: auto; padding: 10px 15px; gap: 10px; background: white; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .cat-item { background: #eee; padding: 8px 15px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; }
+        .cat-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .card { background: white; padding: 15px; border-radius: 12px; margin: 10px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid var(--primary); }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-primary { background: var(--primary); color: white; }
+        
+        /* মডারেটর ও অ্যাডমিন সেকশন */
+        .admin-badge { font-size: 10px; background: gold; color: black; padding: 2px 5px; border-radius: 5px; margin-left: 5px; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        
+        /* বটম নেভিগেশন */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; padding: 12px; font-size: 12px; color: #666; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h3>EarnLogic Pro</h3>
+    <p>ব্যালেন্স: ৳ <span id="balance">০.০০</span> <span id="role-text"></span></p>
+</div>
+
+<div id="cat-bar" class="category-scroll">
+    <div class="cat-item active" onclick="filterTasks('all', this)">সব কাজ</div>
+    <div class="cat-item" onclick="filterTasks('youtube', this)">YouTube</div>
+    <div class="cat-item" onclick="filterTasks('facebook', this)">Facebook</div>
+    <div class="cat-item" onclick="filterTasks('api', this)">Survey/API</div>
+</div>
+
+<div id="task-page" class="content-section active">
+    <div id="task-container">
+        <div class="card task-item" data-category="youtube">
+            <small style="color:red;">YouTube</small>
+            <h4>চ্যানেল সাবস্ক্রাইব করুন</h4>
+            <p>পুরস্কার: ৳ ২.৫০</p>
+            <button class="btn btn-primary">কাজ শুরু</button>
+        </div>
+        <div class="card task-item" data-category="api">
+            <small style="color:orange;">API/Offerwall</small>
+            <h4>Timewall Surveys</h4>
+            <p>অটোমেটিক ইনকাম</p>
+            <button class="btn btn-primary" style="background:var(--success);">অফার দেখুন</button>
+        </div>
+    </div>
+</div>
+
+<div id="post-page" class="content-section">
+    <div class="card">
+        <h3>জব পোস্ট করুন</h3>
+        <select id="post-cat">
+            <option value="youtube">YouTube</option>
+            <option value="facebook">Facebook</option>
+        </select>
+        <input type="text" placeholder="কাজের নাম">
+        <textarea placeholder="কি কি করতে হবে..."></textarea>
+        <button class="btn btn-primary">সাবমিট করুন</button>
+    </div>
+</div>
+
+<div id="control-page" class="content-section">
+    <div class="card" id="login-box">
+        <h4>স্টাফ লগইন</h4>
+        <input type="password" id="staff-pass" placeholder="সিক্রেট কোড দিন">
+        <button class="btn btn-primary" onclick="checkStaff()">লগইন</button>
+    </div>
+
+    <div id="staff-dashboard" style="display:none;">
+        <div class="card">
+            <h4 id="panel-title">প্যানেল</h4>
+            <div id="admin-settings" style="display:none;">
+                <p><b>মডারেটর পাওয়ার কন্ট্রোল:</b></p>
+                <select id="mod-perm">
+                    <option value="1">শুধু কাজ চেক করার ক্ষমতা</option>
+                    <option value="2">সবকিছু (ব্যান + পোস্ট + চেক)</option>
+                </select>
+            </div>
+            <hr>
+            <button class="btn btn-primary" style="background:var(--success);">পেন্ডিং কাজ চেক (Verify)</button>
+            <button class="btn btn-primary" style="background:var(--danger); margin-top:5px;">ইউজার ব্যান করুন</button>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="showPage('task-page', this)"><i class="fas fa-home"></i><br>হোম</div>
+    <div class="nav-item" onclick="showPage('post-page', this)"><i class="fas fa-plus-circle"></i><br>পোস্ট</div>
+    <div class="nav-item" onclick="showPage('control-page', this)"><i class="fas fa-user-shield"></i><br>কন্ট্রোল</div>
+</div>
+
+<script>
+    function filterTasks(cat, el) {
+        document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.querySelectorAll('.task-item').forEach(t => {
+            t.style.display = (cat === 'all' || t.dataset.category === cat) ? 'block' : 'none';
+        });
+    }
+
+    function showPage(id, el) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+        document.getElementById('cat-bar').style.display = (id === 'task-page') ? 'flex' : 'none';
+    }
+
+    function checkStaff() {
+        const p = document.getElementById('staff-pass').value;
+        const dash = document.getElementById('staff-dashboard');
+        const adm = document.getElementById('admin-settings');
+        if(p === "admin77") {
+            dash.style.display = 'block'; adm.style.display = 'block';
+            document.getElementById('panel-title').innerText = "অ্যাডমিন প্যানেল";
+            document.getElementById('role-text').innerHTML = "<span class='admin-badge'>Admin</span>";
+        } else if(p === "mod55") {
+            dash.style.display = 'block'; adm.style.display = 'none';
+            document.getElementById('panel-title').innerText = "মডারেটর প্যানেল";
+        } else { alert("ভুল কোড!"); }
+    }
+</script>
+</body>
+</html>
