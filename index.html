@@ -3,138 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnLogic Pro - Categorized Platform</title>
+    <title>EarnHelper - Premium Microjob Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #212529; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); padding-bottom: 80px; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; border-radius: 0 0 20px 20px; }
-        
-        /* ক্যাটাগরি বার */
-        .category-scroll { display: flex; overflow-x: auto; padding: 10px 15px; gap: 10px; background: white; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .cat-item { background: #eee; padding: 8px 15px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; }
-        .cat-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+        :root { --primary: #1a73e8; --dark: #202124; --success: #28a745; --bg: #f8f9fa; }
+        body { font-family: 'Roboto', sans-serif; margin: 0; background: var(--bg); overflow-x: hidden; }
 
-        .card { background: white; padding: 15px; border-radius: 12px; margin: 10px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid var(--primary); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-primary { background: var(--primary); color: white; }
+        /* হোম পেজ / ল্যান্ডিং পেজ */
+        #landing-page { text-align: center; padding: 50px 20px; display: block; background: white; min-height: 100vh; }
+        .hero-img { width: 150px; margin-bottom: 20px; }
         
-        /* মডারেটর ও অ্যাডমিন সেকশন */
-        .admin-badge { font-size: 10px; background: gold; color: black; padding: 2px 5px; border-radius: 5px; margin-left: 5px; }
-        .content-section { display: none; }
-        .content-section.active { display: block; }
+        /* ড্যাশবোর্ড ও কন্টেন্ট */
+        #main-app { display: none; }
+        .navbar { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); sticky: top; }
         
-        /* বটম নেভিগেশন */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; padding: 12px; font-size: 12px; color: #666; cursor: pointer; }
-        .nav-item.active { color: var(--primary); }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        /* সাইড মেনু */
+        .side-menu { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #fff; z-index: 1000; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.2); overflow-y: auto; }
+        .side-menu.active { left: 0; }
+        .menu-header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; }
+        .menu-item { padding: 15px 25px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; color: var(--dark); cursor: pointer; text-decoration: none; }
+        .menu-item i { margin-right: 15px; width: 20px; color: #555; }
+
+        /* স্ট্যাট কার্ডস */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        .stat-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 3px solid var(--primary); }
+        .stat-card h5 { margin: 0; color: #666; font-size: 12px; }
+        .stat-card p { margin: 5px 0 0; font-weight: bold; font-size: 18px; }
+
+        /* জব সেকশন */
+        .job-filter { display: flex; overflow-x: auto; padding: 10px; gap: 10px; background: #fff; margin-bottom: 10px; }
+        .filter-btn { padding: 8px 18px; background: #eee; border-radius: 20px; font-size: 13px; border: none; white-space: nowrap; }
+        .filter-btn.active { background: var(--success); color: white; }
+
+        /* ফর্ম স্টাইল */
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .btn-main { background: var(--primary); color: white; }
+
+        .section { display: none; padding: 15px; }
+        .section.active { display: block; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h3>EarnLogic Pro</h3>
-    <p>ব্যালেন্স: ৳ <span id="balance">০.০০</span> <span id="role-text"></span></p>
+<div id="landing-page">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="hero-img">
+    <h1>Welcome to EarnHelper</h1>
+    <p>Earn money by completing simple microtasks</p>
+    <div style="margin-top: 30px;">
+        <button class="btn btn-main" onclick="showAuth('signup')">Create Account</button>
+        <p onclick="showAuth('login')" style="margin-top:15px; color: var(--primary); cursor:pointer;">Already have an account? Login</p>
+    </div>
 </div>
 
-<div id="cat-bar" class="category-scroll">
-    <div class="cat-item active" onclick="filterTasks('all', this)">সব কাজ</div>
-    <div class="cat-item" onclick="filterTasks('youtube', this)">YouTube</div>
-    <div class="cat-item" onclick="filterTasks('facebook', this)">Facebook</div>
-    <div class="cat-item" onclick="filterTasks('api', this)">Survey/API</div>
+<div id="auth-section" class="section" style="background: white; min-height: 100vh;">
+    <h2 id="auth-title" style="text-align: center;">Sign Up</h2>
+    <div style="padding: 20px;">
+        <input type="text" id="name" placeholder="Full Name">
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="pass" placeholder="Password">
+        <button class="btn btn-main" onclick="doLogin()">Submit</button>
+        <button class="btn" onclick="location.reload()" style="background:none;">Back</button>
+    </div>
 </div>
 
-<div id="task-page" class="content-section active">
-    <div id="task-container">
-        <div class="card task-item" data-category="youtube">
-            <small style="color:red;">YouTube</small>
-            <h4>চ্যানেল সাবস্ক্রাইব করুন</h4>
-            <p>পুরস্কার: ৳ ২.৫০</p>
-            <button class="btn btn-primary">কাজ শুরু</button>
+<div id="main-app">
+    <div class="navbar">
+        <i class="fas fa-bars" onclick="toggleMenu()" style="font-size: 20px; cursor: pointer;"></i>
+        <b id="nav-title">Dashboard</b>
+        <div style="width: 20px;"></div>
+    </div>
+
+    <div id="sideMenu" class="side-menu">
+        <div class="menu-header">
+            <i class="fas fa-user-circle" style="font-size: 50px;"></i>
+            <h4 id="user-display" style="margin: 10px 0 5px;">User Name</h4>
+            <small>Balance: $0.000</small>
         </div>
-        <div class="card task-item" data-category="api">
-            <small style="color:orange;">API/Offerwall</small>
-            <h4>Timewall Surveys</h4>
-            <p>অটোমেটিক ইনকাম</p>
-            <button class="btn btn-primary" style="background:var(--success);">অফার দেখুন</button>
+        <div class="menu-item" onclick="openSection('dashboard-sec')"><i class="fas fa-home"></i> Dashboard</div>
+        <div class="menu-item" onclick="openSection('jobs-sec')"><i class="fas fa-briefcase"></i> Find Jobs</div>
+        <div class="menu-item" onclick="openSection('post-job-sec')"><i class="fas fa-plus-square"></i> Post Job</div>
+        <div class="menu-item" onclick="openSection('withdraw-sec')"><i class="fas fa-wallet"></i> Withdraw</div>
+        <div class="menu-item" onclick="openSection('refer-sec')"><i class="fas fa-users"></i> Refer & Earn</div>
+        <div class="menu-item" onclick="location.reload()" style="color: red;"><i class="fas fa-sign-out-alt"></i> Logout</div>
+    </div>
+
+    <div id="dashboard-sec" class="section active">
+        <div class="stats-grid">
+            <div class="stat-card"><h5>Balance</h5><p>$0.00</p></div>
+            <div class="stat-card"><h5>Deposited</h5><p>$0.00</p></div>
+            <div class="stat-card"><h5>Completed</h5><p>0</p></div>
+            <div class="stat-card"><h5>Success Rate</h5><p>0%</p></div>
+        </div>
+        <div class="card" style="margin: 15px; padding: 20px; background: #fff; border-radius: 12px; text-align: center;">
+            <h4>Start Earning Now</h4>
+            <button class="btn btn-main" onclick="openSection('jobs-sec')">View Available Jobs</button>
         </div>
     </div>
-</div>
 
-<div id="post-page" class="content-section">
-    <div class="card">
-        <h3>জব পোস্ট করুন</h3>
-        <select id="post-cat">
-            <option value="youtube">YouTube</option>
-            <option value="facebook">Facebook</option>
-        </select>
-        <input type="text" placeholder="কাজের নাম">
-        <textarea placeholder="কি কি করতে হবে..."></textarea>
-        <button class="btn btn-primary">সাবমিট করুন</button>
-    </div>
-</div>
-
-<div id="control-page" class="content-section">
-    <div class="card" id="login-box">
-        <h4>স্টাফ লগইন</h4>
-        <input type="password" id="staff-pass" placeholder="সিক্রেট কোড দিন">
-        <button class="btn btn-primary" onclick="checkStaff()">লগইন</button>
-    </div>
-
-    <div id="staff-dashboard" style="display:none;">
-        <div class="card">
-            <h4 id="panel-title">প্যানেল</h4>
-            <div id="admin-settings" style="display:none;">
-                <p><b>মডারেটর পাওয়ার কন্ট্রোল:</b></p>
-                <select id="mod-perm">
-                    <option value="1">শুধু কাজ চেক করার ক্ষমতা</option>
-                    <option value="2">সবকিছু (ব্যান + পোস্ট + চেক)</option>
-                </select>
+    <div id="jobs-sec" class="section">
+        <div class="job-filter">
+            <button class="filter-btn active">All Jobs</button>
+            <button class="filter-btn">YouTube</button>
+            <button class="filter-btn">Facebook</button>
+            <button class="filter-btn">Sign Up</button>
+        </div>
+        <div id="job-list">
+            <div class="stat-card" style="margin-bottom: 10px; border-bottom: none; border-left: 4px solid var(--success);">
+                <div style="display: flex; justify-content: space-between;">
+                    <b>Subscribe My Channel</b>
+                    <span style="color: var(--success);">$0.030</span>
+                </div>
+                <small>Done: 150/500</small>
             </div>
-            <hr>
-            <button class="btn btn-primary" style="background:var(--success);">পেন্ডিং কাজ চেক (Verify)</button>
-            <button class="btn btn-primary" style="background:var(--danger); margin-top:5px;">ইউজার ব্যান করুন</button>
         </div>
     </div>
-</div>
 
-<div class="bottom-nav">
-    <div class="nav-item active" onclick="showPage('task-page', this)"><i class="fas fa-home"></i><br>হোম</div>
-    <div class="nav-item" onclick="showPage('post-page', this)"><i class="fas fa-plus-circle"></i><br>পোস্ট</div>
-    <div class="nav-item" onclick="showPage('control-page', this)"><i class="fas fa-user-shield"></i><br>কন্ট্রোল</div>
+    <div id="withdraw-sec" class="section"><div class="stat-card"><h3>Withdraw</h3><p>Minimum: $2.00</p></div></div>
 </div>
 
 <script>
-    function filterTasks(cat, el) {
-        document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-        document.querySelectorAll('.task-item').forEach(t => {
-            t.style.display = (cat === 'all' || t.dataset.category === cat) ? 'block' : 'none';
-        });
+    function toggleMenu() { document.getElementById('sideMenu').classList.toggle('active'); }
+    
+    function showAuth(type) {
+        document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('auth-section').classList.add('active');
+        document.getElementById('auth-title').innerText = (type === 'signup') ? 'Create Account' : 'Login';
     }
 
-    function showPage(id, el) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-        document.getElementById('cat-bar').style.display = (id === 'task-page') ? 'flex' : 'none';
+    function doLogin() {
+        document.getElementById('auth-section').classList.remove('active');
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('user-display').innerText = document.getElementById('name').value || "User";
     }
 
-    function checkStaff() {
-        const p = document.getElementById('staff-pass').value;
-        const dash = document.getElementById('staff-dashboard');
-        const adm = document.getElementById('admin-settings');
-        if(p === "admin77") {
-            dash.style.display = 'block'; adm.style.display = 'block';
-            document.getElementById('panel-title').innerText = "অ্যাডমিন প্যানেল";
-            document.getElementById('role-text').innerHTML = "<span class='admin-badge'>Admin</span>";
-        } else if(p === "mod55") {
-            dash.style.display = 'block'; adm.style.display = 'none';
-            document.getElementById('panel-title').innerText = "মডারেটর প্যানেল";
-        } else { alert("ভুল কোড!"); }
+    function openSection(secId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(secId).classList.add('active');
+        document.getElementById('nav-title').innerText = document.getElementById(secId).querySelector('h2, h3, h4')?.innerText || "EarnHelper";
+        toggleMenu();
+    }
+
+    // সিক্রেট অ্যাডমিন ট্রিক: ল্যান্ডিং পেজের ছবিতে ৫ বার ক্লিক করলে অ্যাডমিন লগইন আসবে
+    let clickCount = 0;
+    document.querySelector('.hero-img').onclick = function() {
+        clickCount++;
+        if(clickCount === 5) {
+            let pass = prompt("Enter Secret Admin Code:");
+            if(pass === "admin77") alert("Admin Panel Access Granted (Database required for full access)");
+            clickCount = 0;
+        }
     }
 </script>
+
 </body>
 </html>
