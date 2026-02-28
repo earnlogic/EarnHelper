@@ -3,158 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnHelper - Premium Microjob Platform</title>
+    <title>EarnHelper - Ultimate AI Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #1a73e8; --dark: #202124; --success: #28a745; --bg: #f8f9fa; }
-        body { font-family: 'Roboto', sans-serif; margin: 0; background: var(--bg); overflow-x: hidden; }
-
-        /* হোম পেজ / ল্যান্ডিং পেজ */
-        #landing-page { text-align: center; padding: 50px 20px; display: block; background: white; min-height: 100vh; }
-        .hero-img { width: 150px; margin-bottom: 20px; }
+        :root { --neon-green: #2ecc71; --dark-bg: #121212; --card-bg: #1e1e1e; --text-gray: #b3b3b3; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark-bg); color: white; margin: 0; padding-bottom: 70px; }
+        .container { padding: 15px; max-width: 500px; margin: auto; }
+        .navbar { background: #000; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .card { background: var(--card-bg); border-radius: 15px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
         
-        /* ড্যাশবোর্ড ও কন্টেন্ট */
-        #main-app { display: none; }
-        .navbar { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); sticky: top; }
+        /* Rank Badge Style */
+        .rank-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .bronze { background: #cd7f32; } .silver { background: #c0c0c0; color: #333; } .gold { background: #ffd700; color: #333; }
+
+        /* Floating AI Styles */
+        #ai-btn { position: fixed; bottom: 85px; right: 20px; background: var(--neon-green); color: black; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); z-index: 1001; }
+        #ai-window { display: none; position: fixed; bottom: 145px; right: 20px; width: 300px; background: white; color: #333; border-radius: 15px; z-index: 1000; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .ai-header { background: #1a1a1a; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
         
-        /* সাইড মেনু */
-        .side-menu { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #fff; z-index: 1000; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.2); overflow-y: auto; }
-        .side-menu.active { left: 0; }
-        .menu-header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; }
-        .menu-item { padding: 15px 25px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; color: var(--dark); cursor: pointer; text-decoration: none; }
-        .menu-item i { margin-right: 15px; width: 20px; color: #555; }
+        /* Input Styles */
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
+        .btn { background: var(--neon-green); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn:hover { filter: brightness(1.2); }
 
-        /* স্ট্যাট কার্ডস */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .stat-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 3px solid var(--primary); }
-        .stat-card h5 { margin: 0; color: #666; font-size: 12px; }
-        .stat-card p { margin: 5px 0 0; font-weight: bold; font-size: 18px; }
-
-        /* জব সেকশন */
-        .job-filter { display: flex; overflow-x: auto; padding: 10px; gap: 10px; background: #fff; margin-bottom: 10px; }
-        .filter-btn { padding: 8px 18px; background: #eee; border-radius: 20px; font-size: 13px; border: none; white-space: nowrap; }
-        .filter-btn.active { background: var(--success); color: white; }
-
-        /* ফর্ম স্টাইল */
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        .btn-main { background: var(--primary); color: white; }
-
-        .section { display: none; padding: 15px; }
-        .section.active { display: block; }
+        /* Withdraw Card Design */
+        #success-card { display: none; background: linear-gradient(135deg, #000, #1e1e1e); border: 2px solid var(--neon-green); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; margin-top: 15px; overflow: hidden; }
+        #success-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(46,204,113,0.1) 0%, transparent 70%); }
     </style>
 </head>
 <body>
 
-<div id="landing-page">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="hero-img">
-    <h1>Welcome to EarnHelper</h1>
-    <p>Earn money by completing simple microtasks</p>
-    <div style="margin-top: 30px;">
-        <button class="btn btn-main" onclick="showAuth('signup')">Create Account</button>
-        <p onclick="showAuth('login')" style="margin-top:15px; color: var(--primary); cursor:pointer;">Already have an account? Login</p>
+<div class="navbar">
+    <div style="font-weight: bold; font-size: 20px; color: var(--neon-green);">EarnHelper <span style="font-size: 10px; color: white;">PRO</span></div>
+    <div id="userRankDisplay" class="rank-badge bronze">Bronze</div>
+</div>
+
+<div id="ai-btn" onclick="toggleAI()"><i class="fa fa-robot"></i></div>
+<div id="ai-window">
+    <div class="ai-header">🤖 Hybrid Assistant <span onclick="toggleAI()" style="cursor:pointer">&times;</span></div>
+    <div style="padding: 15px;">
+        <div id="ai-response" style="font-size: 13px; height: 100px; overflow-y: auto; background: #f4f4f4; padding: 8px; border-radius: 8px; margin-bottom: 10px;">হ্যালো! আজ আপনাকে কীভাবে সাহায্য করতে পারি?</div>
+        <textarea id="ai-input" placeholder="কাজের নিয়ম জানতে এখানে লিখুন..." style="background: #eee; color: #333; height: 60px;"></textarea>
+        <input type="file" id="ai-image" accept="image/*" style="font-size: 11px; color: #333; background: none; border: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+            <button class="btn" style="font-size: 12px;" onclick="handleAI('chat')">Ask AI</button>
+            <button class="btn" style="background:#3498db; font-size: 12px;" onclick="handleAI('free')">Free Tr.</button>
+        </div>
     </div>
 </div>
 
-<div id="auth-section" class="section" style="background: white; min-height: 100vh;">
-    <h2 id="auth-title" style="text-align: center;">Sign Up</h2>
-    <div style="padding: 20px;">
-        <input type="text" id="name" placeholder="Full Name">
-        <input type="email" id="email" placeholder="Email Address">
-        <input type="password" id="pass" placeholder="Password">
-        <button class="btn btn-main" onclick="doLogin()">Submit</button>
-        <button class="btn" onclick="location.reload()" style="background:none;">Back</button>
+<div id="authSection" class="container">
+    <div class="card">
+        <h3 style="text-align: center;">স্বাগতম! লগইন করুন</h3>
+        <input type="email" id="email" placeholder="ইমেইল">
+        <input type="password" id="pass" placeholder="পাসওয়ার্ড">
+        
+        <div id="registerFields" style="display: none;">
+            <input type="text" id="username" placeholder="ইউজারনেম">
+            <select id="country">
+                <option value="Bangladesh">Bangladesh</option>
+                <option value="India">India</option>
+                <option value="USA">USA</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="refCode" placeholder="Refer Code (Optional)">
+        </div>
+
+        <button class="btn" id="mainBtn" onclick="handleLogin()">লগইন</button>
+        <p onclick="toggleAuthMode()" id="toggleText" style="text-align:center; font-size:12px; cursor:pointer; color: var(--neon-green); margin-top:10px;">নতুন একাউন্ট খুলুন</p>
     </div>
 </div>
 
-<div id="main-app">
-    <div class="navbar">
-        <i class="fas fa-bars" onclick="toggleMenu()" style="font-size: 20px; cursor: pointer;"></i>
-        <b id="nav-title">Dashboard</b>
-        <div style="width: 20px;"></div>
+<div id="dashboard" class="container" style="display: none;">
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #1a1a1a, #000);">
+        <p style="color: var(--text-gray); margin: 0;">আপনার মোট আয়</p>
+        <h1 id="coinDisplay" style="color: var(--neon-green); margin: 10px 0; font-size: 40px;">0</h1>
+        <div style="font-size: 14px; color: #ffd700;" id="idDisplay">ID: EH-1000</div>
     </div>
 
-    <div id="sideMenu" class="side-menu">
-        <div class="menu-header">
-            <i class="fas fa-user-circle" style="font-size: 50px;"></i>
-            <h4 id="user-display" style="margin: 10px 0 5px;">User Name</h4>
-            <small>Balance: $0.000</small>
+    <div class="card">
+        <h4><i class="fa fa-wallet"></i> উইথড্র কার্ড জেনারেটর</h4>
+        <input type="number" id="withdrawAmt" placeholder="উত্তোলনের পরিমাণ (টাকা)">
+        <button class="btn" onclick="generateCard()">সাকসেস কার্ড তৈরি করুন</button>
+        
+        <div id="success-card">
+            <p style="text-transform: uppercase; font-size: 12px; letter-spacing: 2px;">Payment Receipt</p>
+            <h2 id="cardAmt" style="font-size: 35px; color: var(--neon-green);">৳ 0</h2>
+            <p id="cardUser" style="margin: 5px 0; font-weight: bold;">User Name</p>
+            <p id="cardCountry" style="font-size: 12px; opacity: 0.7;">Country</p>
+            <div style="margin-top: 15px; font-size: 10px; color: var(--neon-green);">VERIFIED BY EARNHELPER</div>
         </div>
-        <div class="menu-item" onclick="openSection('dashboard-sec')"><i class="fas fa-home"></i> Dashboard</div>
-        <div class="menu-item" onclick="openSection('jobs-sec')"><i class="fas fa-briefcase"></i> Find Jobs</div>
-        <div class="menu-item" onclick="openSection('post-job-sec')"><i class="fas fa-plus-square"></i> Post Job</div>
-        <div class="menu-item" onclick="openSection('withdraw-sec')"><i class="fas fa-wallet"></i> Withdraw</div>
-        <div class="menu-item" onclick="openSection('refer-sec')"><i class="fas fa-users"></i> Refer & Earn</div>
-        <div class="menu-item" onclick="location.reload()" style="color: red;"><i class="fas fa-sign-out-alt"></i> Logout</div>
-    </div>
-
-    <div id="dashboard-sec" class="section active">
-        <div class="stats-grid">
-            <div class="stat-card"><h5>Balance</h5><p>$0.00</p></div>
-            <div class="stat-card"><h5>Deposited</h5><p>$0.00</p></div>
-            <div class="stat-card"><h5>Completed</h5><p>0</p></div>
-            <div class="stat-card"><h5>Success Rate</h5><p>0%</p></div>
-        </div>
-        <div class="card" style="margin: 15px; padding: 20px; background: #fff; border-radius: 12px; text-align: center;">
-            <h4>Start Earning Now</h4>
-            <button class="btn btn-main" onclick="openSection('jobs-sec')">View Available Jobs</button>
+        
+        <div id="cardControls" style="display: none; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn" style="background: #34495e;" onclick="downloadCard()"><i class="fa fa-download"></i> সেভ করুন</button>
+            <button class="btn" style="background: #0088cc;" onclick="window.open('https://t.me/your_link')"><i class="fa fa-share"></i> শেয়ার করুন</button>
         </div>
     </div>
 
-    <div id="jobs-sec" class="section">
-        <div class="job-filter">
-            <button class="filter-btn active">All Jobs</button>
-            <button class="filter-btn">YouTube</button>
-            <button class="filter-btn">Facebook</button>
-            <button class="filter-btn">Sign Up</button>
-        </div>
-        <div id="job-list">
-            <div class="stat-card" style="margin-bottom: 10px; border-bottom: none; border-left: 4px solid var(--success);">
-                <div style="display: flex; justify-content: space-between;">
-                    <b>Subscribe My Channel</b>
-                    <span style="color: var(--success);">$0.030</span>
-                </div>
-                <small>Done: 150/500</small>
-            </div>
-        </div>
+    <div class="card">
+        <h4><i class="fa fa-shield-halved"></i> নিরাপত্তা</h4>
+        <button class="btn" style="background: #444;" onclick="changePassword()">পাসওয়ার্ড পরিবর্তন করুন</button>
     </div>
 
-    <div id="withdraw-sec" class="section"><div class="stat-card"><h3>Withdraw</h3><p>Minimum: $2.00</p></div></div>
+    <button class="btn" style="background: #c0392b; margin-top: 10px;" onclick="logout()">লগআউট</button>
 </div>
 
 <script>
-    function toggleMenu() { document.getElementById('sideMenu').classList.toggle('active'); }
+    const sURL = 'https://xserxssnjdshehrefhvr.supabase.co';
+    const sKey = 'Sb_publishable_B3sTciQnBXo6GPcBrqMigQ_NOdflBb-';
+    const supabaseClient = supabase.createClient(sURL, sKey);
     
-    function showAuth(type) {
-        document.getElementById('landing-page').style.display = 'none';
-        document.getElementById('auth-section').classList.add('active');
-        document.getElementById('auth-title').innerText = (type === 'signup') ? 'Create Account' : 'Login';
-    }
+    // AI Keys Rotation (Your Code)
+    const geminiKeys = ["AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4", "AIzaSyDvpWR6XnLN1zlOpm-EA4N9DO34U6nmxn8"];
+    let gIdx = 0;
+    let isLoginMode = true;
 
-    function doLogin() {
-        document.getElementById('auth-section').classList.remove('active');
-        document.getElementById('main-app').style.display = 'block';
-        document.getElementById('user-display').innerText = document.getElementById('name').value || "User";
-    }
-
-    function openSection(secId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(secId).classList.add('active');
-        document.getElementById('nav-title').innerText = document.getElementById(secId).querySelector('h2, h3, h4')?.innerText || "EarnHelper";
-        toggleMenu();
-    }
-
-    // সিক্রেট অ্যাডমিন ট্রিক: ল্যান্ডিং পেজের ছবিতে ৫ বার ক্লিক করলে অ্যাডমিন লগইন আসবে
-    let clickCount = 0;
-    document.querySelector('.hero-img').onclick = function() {
-        clickCount++;
-        if(clickCount === 5) {
-            let pass = prompt("Enter Secret Admin Code:");
-            if(pass === "admin77") alert("Admin Panel Access Granted (Database required for full access)");
-            clickCount = 0;
+    async function handleLogin() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('pass').value;
+        if(isLoginMode) {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+            if(error) alert("ভুল তথ্য! আবার চেষ্টা করুন।"); else location.reload();
+        } else {
+            const user = document.getElementById('username').value;
+            const country = document.getElementById('country').value;
+            const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
+            if(error) return alert(error.message);
+            await supabaseClient.from('profiles').insert([{ id: data.user.id, username: user, country: country, referrer_code: document.getElementById('refCode').value }]);
+            alert("রেজিস্ট্রেশন সফল! ইমেইল ভেরিফাই করুন।");
         }
     }
-</script>
 
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('registerFields').style.display = isLoginMode ? 'none' : 'block';
+        document.getElementById('mainBtn').innerText = isLoginMode ? 'লগইন' : 'রেজিস্ট্রেশন';
+        document.getElementById('toggleText').innerText = isLoginMode ? 'নতুন একাউন্ট খুলুন' : 'লগইন করুন';
+    }
+
+    window.onload = async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadData(session.user.id);
+        }
+    };
+
+    async function loadData(uid) {
+        const { data } = await supabaseClient.from('profiles').select('*').eq('id', uid).single();
+        if(data) {
+            document.getElementById('coinDisplay').innerText = data.coins;
+            document.getElementById('idDisplay').innerText = "ID: EH-" + (1000 + data.id.substring(0,4));
+            updateRank(data.coins);
+            window.userData = data;
+        }
+    }
+
+    function updateRank(coins) {
+        let r = "Bronze", c = "bronze";
+        if(coins > 5000) { r = "Silver"; c = "silver"; }
+        if(coins > 20000) { r = "Gold"; c = "gold"; }
+        const b = document.getElementById('userRankDisplay');
+        b.innerText = r; b.className = "rank-badge " + c;
+    }
+
+    function toggleAI() { let w = document.getElementById('ai-window'); w.style.display = w.style.display==='block'?'none':'block'; }
+
+    async function handleAI(mode) {
+        const box = document.getElementById('ai-response');
+        const input = document.getElementById('ai-input').value;
+        if(!input) return alert("কিছু লিখুন!");
+        
+        box.innerText = "প্রসেসিং হচ্ছে...";
+        if(mode === 'free') {
+            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=en|bn`);
+            const d = await res.json();
+            box.innerText = d.responseData.translatedText;
+        } else {
+            // Your Gemini API Rotation Logic
+            const key = geminiKeys[gIdx % geminiKeys.length]; gIdx++;
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                method: "POST", headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ contents: [{ parts: [{ text: input }] }] })
+            });
+            const d = await res.json();
+            box.innerText = d.candidates[0].content.parts[0].text;
+        }
+    }
+
+    function generateCard() {
+        const amt = document.getElementById('withdrawAmt').value;
+        if(!amt) return alert("পরিমাণ দিন");
+        document.getElementById('cardAmt').innerText = "৳ " + amt;
+        document.getElementById('cardUser').innerText = window.userData.username;
+        document.getElementById('cardCountry').innerText = window.userData.country;
+        document.getElementById('success-card').style.display = 'block';
+        document.getElementById('cardControls').style.display = 'grid';
+    }
+
+    function downloadCard() {
+        html2canvas(document.querySelector("#success-card")).then(canvas => {
+            let link = document.createElement('a');
+            link.download = 'EarnHelper-Payment.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    async function changePassword() {
+        const newPass = prompt("নতুন পাসওয়ার্ড দিন:");
+        if(newPass) {
+            const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+            if(error) alert(error.message); else alert("পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!");
+        }
+    }
+
+    async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
+</script>
 </body>
 </html>
