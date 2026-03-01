@@ -1,208 +1,241 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnHelper - Ultimate AI Edition</title>
+    <title>EarnHelper PRO - Global Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --neon-green: #2ecc71; --dark-bg: #121212; --card-bg: #1e1e1e; --text-gray: #b3b3b3; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--dark-bg); color: white; margin: 0; padding-bottom: 70px; }
-        .container { padding: 15px; max-width: 500px; margin: auto; }
-        .navbar { background: #000; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        .card { background: var(--card-bg); border-radius: 15px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
+        :root { --neon-green: #2ecc71; --dark-bg: #0b0b0b; --card-bg: #161616; --text-gray: #9ca3af; --ai-user-bg: #2f2f2f; --ai-bot-bg: #1a1a1a; }
+        body { font-family: 'Inter', sans-serif; background: var(--dark-bg); color: white; margin: 0; overflow-x: hidden; }
+        .container { padding: 20px; max-width: 480px; margin: auto; }
         
-        /* Rank Badge Style */
-        .rank-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-        .bronze { background: #cd7f32; } .silver { background: #c0c0c0; color: #333; } .gold { background: #ffd700; color: #333; }
-
-        /* Floating AI Styles */
-        #ai-btn { position: fixed; bottom: 85px; right: 20px; background: var(--neon-green); color: black; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); z-index: 1001; }
-        #ai-window { display: none; position: fixed; bottom: 145px; right: 20px; width: 300px; background: white; color: #333; border-radius: 15px; z-index: 1000; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .ai-header { background: #1a1a1a; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
+        /* Auth Styles */
+        .auth-card { background: var(--card-bg); border-radius: 20px; padding: 30px; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .input-group { position: relative; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 14px; background: #1f1f1f; border: 1px solid #333; color: white; border-radius: 12px; font-size: 14px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--neon-green); }
+        .pass-toggle { position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; }
+        .btn { background: var(--neon-green); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         
-        /* Input Styles */
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
-        .btn { background: var(--neon-green); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn:hover { filter: brightness(1.2); }
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 1000; }
+        .nav-item { color: var(--text-gray); text-align: center; font-size: 11px; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--neon-green); }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
 
-        /* Withdraw Card Design */
-        #success-card { display: none; background: linear-gradient(135deg, #000, #1e1e1e); border: 2px solid var(--neon-green); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; margin-top: 15px; overflow: hidden; }
+        /* AI Interface (Gemini Style) */
+        #ai-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; flex-direction: column; }
+        .ai-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        #ai-chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; }
+        .user-msg { align-self: flex-end; background: var(--ai-user-bg); color: white; border-bottom-right-radius: 4px; }
+        .bot-msg { align-self: flex-start; background: var(--ai-bot-bg); border: 1px solid #333; border-bottom-left-radius: 4px; }
+        .ai-input-area { padding: 15px; background: #000; border-top: 1px solid #222; display: flex; gap: 10px; }
+        
+        /* Dashboard Cards */
+        .stat-card { background: linear-gradient(145deg, #1a1a1a, #000); border: 1px solid #222; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 20px; }
+        .task-card { background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
-<div class="navbar">
-    <div style="font-weight: bold; font-size: 20px; color: var(--neon-green);">EarnHelper <span style="font-size: 10px; color: white;">PRO</span></div>
-    <div id="userRankDisplay" class="rank-badge bronze">Bronze</div>
-</div>
-
-<div id="ai-btn" onclick="toggleAI()"><i class="fa fa-robot"></i></div>
-<div id="ai-window">
-    <div class="ai-header">🤖 Hybrid Assistant <span onclick="toggleAI()" style="cursor:pointer">&times;</span></div>
-    <div style="padding: 15px;">
-        <div id="ai-response" style="font-size: 13px; height: 100px; overflow-y: auto; background: #f4f4f4; padding: 8px; border-radius: 8px; margin-bottom: 10px;">হ্যালো! আজ আপনাকে কীভাবে সাহায্য করতে পারি?</div>
-        <textarea id="ai-input" placeholder="কাজের নিয়ম জানতে এখানে লিখুন..." style="background: #eee; color: #333; height: 60px;"></textarea>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-            <button class="btn" style="font-size: 12px;" onclick="handleAI('chat')">Ask AI</button>
-            <button class="btn" style="background:#3498db; font-size: 12px;" onclick="handleAI('free')">Free Tr.</button>
-        </div>
-    </div>
-</div>
-
-<div id="authSection" class="container">
-    <div class="card">
-        <h3 style="text-align: center;">স্বাগতম! লগইন করুন</h3>
-        <input type="email" id="email" placeholder="ইমেইল">
-        <input type="password" id="pass" placeholder="পাসওয়ার্ড">
+<div id="authSection" class="container" style="margin-top: 50px;">
+    <div class="auth-card">
+        <h2 id="authTitle" style="text-align: center; margin-bottom: 25px;">Create Account</h2>
         
-        <div id="registerFields" style="display: none;">
-            <input type="text" id="username" placeholder="ইউজারনেম">
-            <select id="country">
-                <option value="Bangladesh">Bangladesh</option>
-                <option value="India">India</option>
-                <option value="USA">USA</option>
-                <option value="Other">Other</option>
-            </select>
-            <input type="text" id="refCode" placeholder="Refer Code (Optional)">
+        <div id="registerFields">
+            <div class="input-group"><input type="text" id="regUser" placeholder="Full Name"></div>
+            <div class="input-group">
+                <select id="regCountry" onchange="checkOtherCountry(this.value)">
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="India">India</option>
+                    <option value="USA">USA</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div id="otherCountryBox" style="display: none;" class="input-group">
+                <input type="text" id="customCountry" placeholder="Enter your country name">
+            </div>
         </div>
 
-        <button class="btn" id="mainBtn" onclick="handleLogin()">লগইন</button>
-        <p onclick="toggleAuthMode()" id="toggleText" style="text-align:center; font-size:12px; cursor:pointer; color: var(--neon-green); margin-top:10px;">নতুন একাউন্ট খুলুন</p>
-    </div>
-</div>
-
-<div id="dashboard" class="container" style="display: none;">
-    <div class="card" style="text-align: center; background: linear-gradient(135deg, #1a1a1a, #000);">
-        <p style="color: var(--text-gray); margin: 0;">আপনার মোট আয়</p>
-        <h1 id="coinDisplay" style="color: var(--neon-green); margin: 10px 0; font-size: 40px;">0</h1>
-        <div style="font-size: 14px; color: #ffd700;" id="idDisplay">ID: EH-1000</div>
-    </div>
-
-    <div class="card">
-        <h4><i class="fa fa-wallet"></i> উইথড্র কার্ড জেনারেটর</h4>
-        <input type="number" id="withdrawAmt" placeholder="উত্তোলনের পরিমাণ (টাকা)">
-        <button class="btn" onclick="generateCard()">সাকসেস কার্ড তৈরি করুন</button>
-        
-        <div id="success-card">
-            <p style="text-transform: uppercase; font-size: 12px; letter-spacing: 2px;">Payment Receipt</p>
-            <h2 id="cardAmt" style="font-size: 35px; color: var(--neon-green);">৳ 0</h2>
-            <p id="cardUser" style="margin: 5px 0; font-weight: bold;">User Name</p>
-            <p id="cardCountry" style="font-size: 12px; opacity: 0.7;">Country</p>
+        <div class="input-group">
+            <input type="email" id="authEmail" placeholder="Email Address">
         </div>
         
-        <div id="cardControls" style="display: none; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <button class="btn" style="background: #34495e;" onclick="downloadCard()"><i class="fa fa-download"></i> সেভ করুন</button>
+        <div class="input-group">
+            <input type="password" id="authPass" placeholder="Password">
+            <i class="fa fa-eye pass-toggle" onclick="togglePass('authPass')"></i>
+        </div>
+
+        <button class="btn" id="authBtn" onclick="handleAuth()">Sign Up</button>
+        
+        <div style="text-align: center; margin-top: 20px; font-size: 14px;">
+            <span id="toggleText">Already have an account?</span> 
+            <span onclick="switchAuth()" style="color: var(--neon-green); cursor: pointer; font-weight: bold;" id="toggleLink">Log In</span>
+        </div>
+        
+        <p id="forgotPass" style="text-align: center; font-size: 12px; color: var(--text-gray); cursor: pointer; margin-top: 15px; display: none;" onclick="alert('Reset link sent to email!')">Forgot Password?</p>
+    </div>
+</div>
+
+<div id="dashboard" style="display: none;">
+    <div class="container">
+        <div class="stat-card">
+            <p style="color: var(--text-gray); font-size: 14px;">Total Balance</p>
+            <h1 style="font-size: 42px; color: var(--neon-green); margin: 10px 0;">৳ <span id="balance">0.00</span></h1>
+            <div id="userRank" style="font-size: 12px; background: #333; display: inline-block; padding: 4px 12px; border-radius: 20px;">BRONZE</div>
+        </div>
+
+        <div id="home-sec">
+            <h3>Active Tasks</h3>
+            <div class="task-card">
+                <div>
+                    <div style="font-weight: bold;">Daily Check-in</div>
+                    <div style="font-size: 12px; color: var(--text-gray);">Get your daily reward</div>
+                </div>
+                <div style="color: var(--neon-green); font-weight: bold;">+৳ 10</div>
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <h4><i class="fa fa-shield-halved"></i> নিরাপত্তা</h4>
-        <button class="btn" style="background: #444;" onclick="changePassword()">পাসওয়ার্ড পরিবর্তন করুন</button>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showSec('home')"><i class="fa fa-home"></i>Home</div>
+        <div class="nav-item" onclick="openAI()"><i class="fa fa-robot"></i>AI Chat</div>
+        <div class="nav-item" onclick="showSec('withdraw')"><i class="fa fa-wallet"></i>Withdraw</div>
+        <div class="nav-item" onclick="logout()"><i class="fa fa-sign-out-alt"></i>Exit</div>
     </div>
+</div>
 
-    <button class="btn" style="background: #c0392b; margin-top: 10px;" onclick="logout()">লগআউট</button>
+<div id="ai-container">
+    <div class="ai-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa fa-robot" style="color: var(--neon-green);"></i>
+            <span>AI Assistant</span>
+        </div>
+        <i class="fa fa-times" onclick="closeAI()" style="cursor: pointer;"></i>
+    </div>
+    <div id="ai-chat-box">
+        <div class="message bot-msg">Hello! I am your AI assistant. How can I help you today?</div>
+    </div>
+    <div class="ai-input-area">
+        <input type="text" id="ai-input" placeholder="Ask anything...">
+        <button onclick="askAI()" style="background: var(--neon-green); border: none; width: 45px; border-radius: 10px; cursor: pointer;">
+            <i class="fa fa-paper-plane" style="color: black;"></i>
+        </button>
+    </div>
 </div>
 
 <script>
-    // আপনার সঠিক Supabase Config
+    // Config
     const sURL = 'https://xserxssnjdshehrefhvr.supabase.co';
     const sKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzZXJ4c3NuamRzaGVocmVmaHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzY4MTgsImV4cCI6MjA4NzQxMjgxOH0.Dow2NjohUNLgpDluVKcV4TBACCpDyCa31BH-tdLYik8';
     const supabaseClient = supabase.createClient(sURL, sKey);
     
-    // AI API Keys (Rotation)
-    const geminiKeys = ["AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4", "AIzaSyDvpWR6XnLN1zlOpm-EA4N9DO34U6nmxn8"];
-    let gIdx = 0;
-    let isLoginMode = true;
+    let isLogin = false; // Registration first
 
-    async function handleLogin() {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('pass').value;
-        if(isLoginMode) {
+    // Toggle Password Visibility
+    function togglePass(id) {
+        const input = document.getElementById(id);
+        const icon = event.target;
+        if(input.type === "password") {
+            input.type = "text";
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = "password";
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // Auth Switch
+    function switchAuth() {
+        isLogin = !isLogin;
+        document.getElementById('authTitle').innerText = isLogin ? "Welcome Back" : "Create Account";
+        document.getElementById('registerFields').style.display = isLogin ? "none" : "block";
+        document.getElementById('authBtn').innerText = isLogin ? "Log In" : "Sign Up";
+        document.getElementById('toggleText').innerText = isLogin ? "Don't have an account?" : "Already have an account?";
+        document.getElementById('toggleLink').innerText = isLogin ? "Sign Up" : "Log In";
+        document.getElementById('forgotPass').style.display = isLogin ? "block" : "none";
+    }
+
+    function checkOtherCountry(val) {
+        document.getElementById('otherCountryBox').style.display = (val === "Other") ? "block" : "none";
+    }
+
+    // Handle Auth
+    async function handleAuth() {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPass').value;
+        
+        if(isLogin) {
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
             if(error) alert(error.message); else location.reload();
         } else {
-            const user = document.getElementById('username').value;
-            const country = document.getElementById('country').value;
+            const user = document.getElementById('regUser').value;
+            let country = document.getElementById('regCountry').value;
+            if(country === "Other") country = document.getElementById('customCountry').value;
+            
             const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
             if(error) return alert(error.message);
+            
             await supabaseClient.from('profiles').insert([{ id: data.user.id, username: user, country: country }]);
-            alert("রেজিস্ট্রেশন সফল! ইমেইল চেক করুন।");
+            alert("Success! Please check your email for verification.");
         }
     }
 
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('registerFields').style.display = isLoginMode ? 'none' : 'block';
-        document.getElementById('mainBtn').innerText = isLoginMode ? 'লগইন' : 'রেজিস্ট্রেশন';
-        document.getElementById('toggleText').innerText = isLoginMode ? 'নতুন একাউন্ট খুলুন' : 'লগইন করুন';
+    // AI Logic
+    function openAI() { document.getElementById('ai-container').style.display = 'flex'; }
+    function closeAI() { document.getElementById('ai-container').style.display = 'none'; }
+
+    async function askAI() {
+        const input = document.getElementById('ai-input');
+        const box = document.getElementById('ai-chat-box');
+        if(!input.value) return;
+
+        // User Message
+        box.innerHTML += `<div class="message user-msg">${input.value}</div>`;
+        const userQuery = input.value;
+        input.value = "";
+        box.scrollTop = box.scrollHeight;
+
+        // Bot Thinking
+        const botId = "bot-" + Date.now();
+        box.innerHTML += `<div class="message bot-msg" id="${botId}">...</div>`;
+
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4`, {
+                method: "POST", headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }] })
+            });
+            const d = await res.json();
+            document.getElementById(botId).innerText = d.candidates[0].content.parts[0].text;
+        } catch(e) {
+            document.getElementById(botId).innerText = "AI is currently busy. Please try again.";
+        }
+        box.scrollTop = box.scrollHeight;
     }
 
+    // Session Check
     window.onload = async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
+        if(session) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            loadData(session.user.id);
+            loadUser(session.user.id);
         }
     };
 
-    async function loadData(uid) {
+    async function loadUser(uid) {
         const { data } = await supabaseClient.from('profiles').select('*').eq('id', uid).single();
         if(data) {
-            document.getElementById('coinDisplay').innerText = data.coins || 0;
-            document.getElementById('idDisplay').innerText = "ID: EH-" + data.id.substring(0,4);
-            updateRank(data.coins || 0);
-            window.userData = data;
+            document.getElementById('balance').innerText = data.coins || "0.00";
+            document.getElementById('userRank').innerText = (data.coins > 5000) ? "GOLD" : "BRONZE";
         }
-    }
-
-    function updateRank(coins) {
-        let r = "Bronze", c = "bronze";
-        if(coins > 5000) { r = "Silver"; c = "silver"; }
-        if(coins > 20000) { r = "Gold"; c = "gold"; }
-        const b = document.getElementById('userRankDisplay');
-        b.innerText = r; b.className = "rank-badge " + c;
-    }
-
-    function toggleAI() { let w = document.getElementById('ai-window'); w.style.display = w.style.display==='block'?'none':'block'; }
-
-    async function handleAI(mode) {
-        const box = document.getElementById('ai-response');
-        const input = document.getElementById('ai-input').value;
-        if(!input) return alert("কিছু লিখুন!");
-        box.innerText = "প্রসেসিং হচ্ছে...";
-        const key = geminiKeys[gIdx % geminiKeys.length]; gIdx++;
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-                method: "POST", headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ contents: [{ parts: [{ text: input }] }] })
-            });
-            const d = await res.json();
-            box.innerText = d.candidates[0].content.parts[0].text;
-        } catch(e) { box.innerText = "Error! আবার চেষ্টা করুন।"; }
-    }
-
-    function generateCard() {
-        document.getElementById('cardAmt').innerText = "৳ " + document.getElementById('withdrawAmt').value;
-        document.getElementById('cardUser').innerText = window.userData.username;
-        document.getElementById('cardCountry').innerText = window.userData.country;
-        document.getElementById('success-card').style.display = 'block';
-        document.getElementById('cardControls').style.display = 'grid';
-    }
-
-    function downloadCard() {
-        html2canvas(document.querySelector("#success-card")).then(canvas => {
-            let link = document.createElement('a');
-            link.download = 'EarnHelper.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        });
     }
 
     async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
 </script>
 </body>
-                    </html>
+</html>
