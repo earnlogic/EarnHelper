@@ -3,239 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnHelper PRO - Global Edition</title>
+    <title>EarnHelper PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --neon-green: #2ecc71; --dark-bg: #0b0b0b; --card-bg: #161616; --text-gray: #9ca3af; --ai-user-bg: #2f2f2f; --ai-bot-bg: #1a1a1a; }
-        body { font-family: 'Inter', sans-serif; background: var(--dark-bg); color: white; margin: 0; overflow-x: hidden; }
+        :root { --neon-green: #2ecc71; --dark-bg: #0b0b0b; --card-bg: #161616; --text-gray: #9ca3af; }
+        body { font-family: 'Inter', sans-serif; background: var(--dark-bg); color: white; margin: 0; padding-bottom: 80px; }
         .container { padding: 20px; max-width: 480px; margin: auto; }
         
-        /* Auth Styles */
-        .auth-card { background: var(--card-bg); border-radius: 20px; padding: 30px; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .input-group { position: relative; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 14px; background: #1f1f1f; border: 1px solid #333; color: white; border-radius: 12px; font-size: 14px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--neon-green); }
-        .pass-toggle { position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; }
-        .btn { background: var(--neon-green); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        
+        /* Dashboard Card */
+        .stat-card { background: #1a1a1a; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 20px; border: 1px solid #222; }
+        .task-card { background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
+
+        /* Floating AI Widget (Corner Style) */
+        #ai-widget { position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px; background: var(--neon-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); z-index: 2000; transition: 0.3s; }
+        #ai-chat-window { display: none; position: fixed; bottom: 160px; right: 20px; width: 300px; height: 400px; background: #111; border-radius: 15px; border: 1px solid #333; flex-direction: column; z-index: 2001; box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden; }
+        .ai-header { background: #222; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 14px; border-bottom: 1px solid #333; }
+        #ai-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+        .msg { padding: 8px 12px; border-radius: 12px; max-width: 80%; line-height: 1.4; }
+        .u-msg { align-self: flex-end; background: var(--neon-green); color: black; }
+        .b-msg { align-self: flex-start; background: #222; border: 1px solid #333; }
+        .ai-input { padding: 10px; background: #000; border-top: 1px solid #333; display: flex; gap: 5px; }
+        .ai-input input { flex: 1; background: #1a1a1a; border: none; color: white; padding: 8px; border-radius: 5px; outline: none; }
+
         /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 1000; }
-        .nav-item { color: var(--text-gray); text-align: center; font-size: 11px; cursor: pointer; flex: 1; }
+        .nav-item { color: var(--text-gray); text-align: center; font-size: 11px; cursor: pointer; flex: 1; text-decoration: none; }
         .nav-item.active { color: var(--neon-green); }
         .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
-
-        /* AI Interface (Gemini Style) */
-        #ai-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; flex-direction: column; }
-        .ai-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-        #ai-chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .message { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; }
-        .user-msg { align-self: flex-end; background: var(--ai-user-bg); color: white; border-bottom-right-radius: 4px; }
-        .bot-msg { align-self: flex-start; background: var(--ai-bot-bg); border: 1px solid #333; border-bottom-left-radius: 4px; }
-        .ai-input-area { padding: 15px; background: #000; border-top: 1px solid #222; display: flex; gap: 10px; }
-        
-        /* Dashboard Cards */
-        .stat-card { background: linear-gradient(145deg, #1a1a1a, #000); border: 1px solid #222; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 20px; }
-        .task-card { background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
-<div id="authSection" class="container" style="margin-top: 50px;">
-    <div class="auth-card">
-        <h2 id="authTitle" style="text-align: center; margin-bottom: 25px;">Create Account</h2>
-        
-        <div id="registerFields">
-            <div class="input-group"><input type="text" id="regUser" placeholder="Full Name"></div>
-            <div class="input-group">
-                <select id="regCountry" onchange="checkOtherCountry(this.value)">
-                    <option value="Bangladesh">Bangladesh</option>
-                    <option value="India">India</option>
-                    <option value="USA">USA</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div id="otherCountryBox" style="display: none;" class="input-group">
-                <input type="text" id="customCountry" placeholder="Enter your country name">
-            </div>
-        </div>
+<div id="main-content" class="container">
+    <div class="stat-card">
+        <p style="color: var(--text-gray);">Total Balance</p>
+        <h1 style="color: var(--neon-green); font-size: 40px; margin: 10px 0;">৳ <span id="balance">0.00</span></h1>
+        <div style="font-size: 12px; background: #333; padding: 4px 12px; border-radius: 20px;">BRONZE</div>
+    </div>
 
-        <div class="input-group">
-            <input type="email" id="authEmail" placeholder="Email Address">
+    <h3>Active Tasks</h3>
+    <div class="task-card">
+        <div>
+            <div style="font-weight: bold;">Daily Check-in</div>
+            <div style="font-size: 12px; color: var(--text-gray);">Get your daily reward</div>
         </div>
-        
-        <div class="input-group">
-            <input type="password" id="authPass" placeholder="Password">
-            <i class="fa fa-eye pass-toggle" onclick="togglePass('authPass')"></i>
-        </div>
-
-        <button class="btn" id="authBtn" onclick="handleAuth()">Sign Up</button>
-        
-        <div style="text-align: center; margin-top: 20px; font-size: 14px;">
-            <span id="toggleText">Already have an account?</span> 
-            <span onclick="switchAuth()" style="color: var(--neon-green); cursor: pointer; font-weight: bold;" id="toggleLink">Log In</span>
-        </div>
-        
-        <p id="forgotPass" style="text-align: center; font-size: 12px; color: var(--text-gray); cursor: pointer; margin-top: 15px; display: none;" onclick="alert('Reset link sent to email!')">Forgot Password?</p>
+        <div style="color: var(--neon-green); font-weight: bold;">+৳ 10</div>
     </div>
 </div>
 
-<div id="dashboard" style="display: none;">
-    <div class="container">
-        <div class="stat-card">
-            <p style="color: var(--text-gray); font-size: 14px;">Total Balance</p>
-            <h1 style="font-size: 42px; color: var(--neon-green); margin: 10px 0;">৳ <span id="balance">0.00</span></h1>
-            <div id="userRank" style="font-size: 12px; background: #333; display: inline-block; padding: 4px 12px; border-radius: 20px;">BRONZE</div>
-        </div>
+<div id="ai-widget" onclick="toggleAI()"><i class="fa fa-robot" style="color: black; font-size: 24px;"></i></div>
 
-        <div id="home-sec">
-            <h3>Active Tasks</h3>
-            <div class="task-card">
-                <div>
-                    <div style="font-weight: bold;">Daily Check-in</div>
-                    <div style="font-size: 12px; color: var(--text-gray);">Get your daily reward</div>
-                </div>
-                <div style="color: var(--neon-green); font-weight: bold;">+৳ 10</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="showSec('home')"><i class="fa fa-home"></i>Home</div>
-        <div class="nav-item" onclick="openAI()"><i class="fa fa-robot"></i>AI Chat</div>
-        <div class="nav-item" onclick="showSec('withdraw')"><i class="fa fa-wallet"></i>Withdraw</div>
-        <div class="nav-item" onclick="logout()"><i class="fa fa-sign-out-alt"></i>Exit</div>
-    </div>
-</div>
-
-<div id="ai-container">
+<div id="ai-chat-window">
     <div class="ai-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <i class="fa fa-robot" style="color: var(--neon-green);"></i>
-            <span>AI Assistant</span>
-        </div>
-        <i class="fa fa-times" onclick="closeAI()" style="cursor: pointer;"></i>
+        <span><i class="fa fa-robot"></i> AI Assistant</span>
+        <i class="fa fa-times" onclick="toggleAI()" style="cursor:pointer"></i>
     </div>
-    <div id="ai-chat-box">
-        <div class="message bot-msg">Hello! I am your AI assistant. How can I help you today?</div>
+    <div id="ai-messages">
+        <div class="msg b-msg">Hello! How can I help you earn today?</div>
     </div>
-    <div class="ai-input-area">
-        <input type="text" id="ai-input" placeholder="Ask anything...">
-        <button onclick="askAI()" style="background: var(--neon-green); border: none; width: 45px; border-radius: 10px; cursor: pointer;">
-            <i class="fa fa-paper-plane" style="color: black;"></i>
-        </button>
+    <div class="ai-input">
+        <input type="text" id="ai-user-input" placeholder="Type here...">
+        <button onclick="askAI()" style="background: var(--neon-green); border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;"><i class="fa fa-paper-plane"></i></button>
     </div>
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active"><i class="fa fa-home"></i>Home</div>
+    <div class="nav-item" onclick="alert('Redirecting to Tasks...')"><i class="fa fa-tasks"></i>Tasks</div>
+    <div class="nav-item" onclick="alert('Withdraw Section Loading...')"><i class="fa fa-wallet"></i>Withdraw</div>
+    <div class="nav-item" onclick="location.reload()"><i class="fa fa-sign-out-alt"></i>Exit</div>
 </div>
 
 <script>
-    // Config
+    // Supabase Config
     const sURL = 'https://xserxssnjdshehrefhvr.supabase.co';
     const sKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzZXJ4c3NuamRzaGVocmVmaHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzY4MTgsImV4cCI6MjA4NzQxMjgxOH0.Dow2NjohUNLgpDluVKcV4TBACCpDyCa31BH-tdLYik8';
     const supabaseClient = supabase.createClient(sURL, sKey);
-    
-    let isLogin = false; // Registration first
 
-    // Toggle Password Visibility
-    function togglePass(id) {
-        const input = document.getElementById(id);
-        const icon = event.target;
-        if(input.type === "password") {
-            input.type = "text";
-            icon.classList.replace('fa-eye', 'fa-eye-slash');
-        } else {
-            input.type = "password";
-            icon.classList.replace('fa-eye-slash', 'fa-eye');
-        }
+    function toggleAI() {
+        const win = document.getElementById('ai-chat-window');
+        win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
     }
-
-    // Auth Switch
-    function switchAuth() {
-        isLogin = !isLogin;
-        document.getElementById('authTitle').innerText = isLogin ? "Welcome Back" : "Create Account";
-        document.getElementById('registerFields').style.display = isLogin ? "none" : "block";
-        document.getElementById('authBtn').innerText = isLogin ? "Log In" : "Sign Up";
-        document.getElementById('toggleText').innerText = isLogin ? "Don't have an account?" : "Already have an account?";
-        document.getElementById('toggleLink').innerText = isLogin ? "Sign Up" : "Log In";
-        document.getElementById('forgotPass').style.display = isLogin ? "block" : "none";
-    }
-
-    function checkOtherCountry(val) {
-        document.getElementById('otherCountryBox').style.display = (val === "Other") ? "block" : "none";
-    }
-
-    // Handle Auth
-    async function handleAuth() {
-        const email = document.getElementById('authEmail').value;
-        const pass = document.getElementById('authPass').value;
-        
-        if(isLogin) {
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-            if(error) alert(error.message); else location.reload();
-        } else {
-            const user = document.getElementById('regUser').value;
-            let country = document.getElementById('regCountry').value;
-            if(country === "Other") country = document.getElementById('customCountry').value;
-            
-            const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
-            if(error) return alert(error.message);
-            
-            await supabaseClient.from('profiles').insert([{ id: data.user.id, username: user, country: country }]);
-            alert("Success! Please check your email for verification.");
-        }
-    }
-
-    // AI Logic
-    function openAI() { document.getElementById('ai-container').style.display = 'flex'; }
-    function closeAI() { document.getElementById('ai-container').style.display = 'none'; }
 
     async function askAI() {
-        const input = document.getElementById('ai-input');
-        const box = document.getElementById('ai-chat-box');
+        const input = document.getElementById('ai-user-input');
+        const box = document.getElementById('ai-messages');
         if(!input.value) return;
 
-        // User Message
-        box.innerHTML += `<div class="message user-msg">${input.value}</div>`;
-        const userQuery = input.value;
+        box.innerHTML += `<div class="msg u-msg">${input.value}</div>`;
+        const userText = input.value;
         input.value = "";
         box.scrollTop = box.scrollHeight;
 
-        // Bot Thinking
-        const botId = "bot-" + Date.now();
-        box.innerHTML += `<div class="message bot-msg" id="${botId}">...</div>`;
+        const botMsgId = "bot-" + Date.now();
+        box.innerHTML += `<div class="msg b-msg" id="${botMsgId}">Thinking...</div>`;
 
         try {
+            // Using a sample Gemini Key (Update this with your own working key)
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4`, {
                 method: "POST", headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }] })
+                body: JSON.stringify({ contents: [{ parts: [{ text: userText }] }] })
             });
             const d = await res.json();
-            document.getElementById(botId).innerText = d.candidates[0].content.parts[0].text;
+            document.getElementById(botMsgId).innerText = d.candidates[0].content.parts[0].text;
         } catch(e) {
-            document.getElementById(botId).innerText = "AI is currently busy. Please try again.";
+            document.getElementById(botMsgId).innerText = "AI service unavailable. Check API Key.";
         }
         box.scrollTop = box.scrollHeight;
     }
-
-    // Session Check
-    window.onload = async () => {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if(session) {
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            loadUser(session.user.id);
-        }
-    };
-
-    async function loadUser(uid) {
-        const { data } = await supabaseClient.from('profiles').select('*').eq('id', uid).single();
-        if(data) {
-            document.getElementById('balance').innerText = data.coins || "0.00";
-            document.getElementById('userRank').innerText = (data.coins > 5000) ? "GOLD" : "BRONZE";
-        }
-    }
-
-    async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
 </script>
 </body>
 </html>
