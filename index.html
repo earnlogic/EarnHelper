@@ -30,7 +30,6 @@
 
         /* Withdraw Card Design */
         #success-card { display: none; background: linear-gradient(135deg, #000, #1e1e1e); border: 2px solid var(--neon-green); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; margin-top: 15px; overflow: hidden; }
-        #success-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(46,204,113,0.1) 0%, transparent 70%); }
     </style>
 </head>
 <body>
@@ -46,7 +45,6 @@
     <div style="padding: 15px;">
         <div id="ai-response" style="font-size: 13px; height: 100px; overflow-y: auto; background: #f4f4f4; padding: 8px; border-radius: 8px; margin-bottom: 10px;">হ্যালো! আজ আপনাকে কীভাবে সাহায্য করতে পারি?</div>
         <textarea id="ai-input" placeholder="কাজের নিয়ম জানতে এখানে লিখুন..." style="background: #eee; color: #333; height: 60px;"></textarea>
-        <input type="file" id="ai-image" accept="image/*" style="font-size: 11px; color: #333; background: none; border: none;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
             <button class="btn" style="font-size: 12px;" onclick="handleAI('chat')">Ask AI</button>
             <button class="btn" style="background:#3498db; font-size: 12px;" onclick="handleAI('free')">Free Tr.</button>
@@ -93,12 +91,10 @@
             <h2 id="cardAmt" style="font-size: 35px; color: var(--neon-green);">৳ 0</h2>
             <p id="cardUser" style="margin: 5px 0; font-weight: bold;">User Name</p>
             <p id="cardCountry" style="font-size: 12px; opacity: 0.7;">Country</p>
-            <div style="margin-top: 15px; font-size: 10px; color: var(--neon-green);">VERIFIED BY EARNHELPER</div>
         </div>
         
         <div id="cardControls" style="display: none; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <button class="btn" style="background: #34495e;" onclick="downloadCard()"><i class="fa fa-download"></i> সেভ করুন</button>
-            <button class="btn" style="background: #0088cc;" onclick="window.open('https://t.me/your_link')"><i class="fa fa-share"></i> শেয়ার করুন</button>
         </div>
     </div>
 
@@ -111,11 +107,12 @@
 </div>
 
 <script>
+    // আপনার সঠিক Supabase Config
     const sURL = 'https://xserxssnjdshehrefhvr.supabase.co';
-    const sKey = 'Sb_publishable_B3sTciQnBXo6GPcBrqMigQ_NOdflBb-';
+    const sKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzZXJ4c3NuamRzaGVocmVmaHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzY4MTgsImV4cCI6MjA4NzQxMjgxOH0.Dow2NjohUNLgpDluVKcV4TBACCpDyCa31BH-tdLYik8';
     const supabaseClient = supabase.createClient(sURL, sKey);
     
-    // AI Keys Rotation (Your Code)
+    // AI API Keys (Rotation)
     const geminiKeys = ["AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4", "AIzaSyDvpWR6XnLN1zlOpm-EA4N9DO34U6nmxn8"];
     let gIdx = 0;
     let isLoginMode = true;
@@ -125,14 +122,14 @@
         const pass = document.getElementById('pass').value;
         if(isLoginMode) {
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-            if(error) alert("ভুল তথ্য! আবার চেষ্টা করুন।"); else location.reload();
+            if(error) alert(error.message); else location.reload();
         } else {
             const user = document.getElementById('username').value;
             const country = document.getElementById('country').value;
             const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
             if(error) return alert(error.message);
-            await supabaseClient.from('profiles').insert([{ id: data.user.id, username: user, country: country, referrer_code: document.getElementById('refCode').value }]);
-            alert("রেজিস্ট্রেশন সফল! ইমেইল ভেরিফাই করুন।");
+            await supabaseClient.from('profiles').insert([{ id: data.user.id, username: user, country: country }]);
+            alert("রেজিস্ট্রেশন সফল! ইমেইল চেক করুন।");
         }
     }
 
@@ -155,9 +152,9 @@
     async function loadData(uid) {
         const { data } = await supabaseClient.from('profiles').select('*').eq('id', uid).single();
         if(data) {
-            document.getElementById('coinDisplay').innerText = data.coins;
-            document.getElementById('idDisplay').innerText = "ID: EH-" + (1000 + data.id.substring(0,4));
-            updateRank(data.coins);
+            document.getElementById('coinDisplay').innerText = data.coins || 0;
+            document.getElementById('idDisplay').innerText = "ID: EH-" + data.id.substring(0,4);
+            updateRank(data.coins || 0);
             window.userData = data;
         }
     }
@@ -176,28 +173,20 @@
         const box = document.getElementById('ai-response');
         const input = document.getElementById('ai-input').value;
         if(!input) return alert("কিছু লিখুন!");
-        
         box.innerText = "প্রসেসিং হচ্ছে...";
-        if(mode === 'free') {
-            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=en|bn`);
-            const d = await res.json();
-            box.innerText = d.responseData.translatedText;
-        } else {
-            // Your Gemini API Rotation Logic
-            const key = geminiKeys[gIdx % geminiKeys.length]; gIdx++;
+        const key = geminiKeys[gIdx % geminiKeys.length]; gIdx++;
+        try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
                 method: "POST", headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ contents: [{ parts: [{ text: input }] }] })
             });
             const d = await res.json();
             box.innerText = d.candidates[0].content.parts[0].text;
-        }
+        } catch(e) { box.innerText = "Error! আবার চেষ্টা করুন।"; }
     }
 
     function generateCard() {
-        const amt = document.getElementById('withdrawAmt').value;
-        if(!amt) return alert("পরিমাণ দিন");
-        document.getElementById('cardAmt').innerText = "৳ " + amt;
+        document.getElementById('cardAmt').innerText = "৳ " + document.getElementById('withdrawAmt').value;
         document.getElementById('cardUser').innerText = window.userData.username;
         document.getElementById('cardCountry').innerText = window.userData.country;
         document.getElementById('success-card').style.display = 'block';
@@ -207,18 +196,10 @@
     function downloadCard() {
         html2canvas(document.querySelector("#success-card")).then(canvas => {
             let link = document.createElement('a');
-            link.download = 'EarnHelper-Payment.png';
+            link.download = 'EarnHelper.png';
             link.href = canvas.toDataURL();
             link.click();
         });
-    }
-
-    async function changePassword() {
-        const newPass = prompt("নতুন পাসওয়ার্ড দিন:");
-        if(newPass) {
-            const { error } = await supabaseClient.auth.updateUser({ password: newPass });
-            if(error) alert(error.message); else alert("পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!");
-        }
     }
 
     async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
