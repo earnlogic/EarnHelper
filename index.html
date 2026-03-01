@@ -196,6 +196,22 @@
             if(data) {
                 document.getElementById('balance').innerText = data.coins || "0.00";
                 document.getElementById('rankBadge').innerText = data.coins > 5000 ? "GOLD" : "BRONZE";
+           
+            // এই ফাংশনটি মেনু পরিবর্তন করবে (WorkupJob-এর মতো)
+function showSec(id) {
+    // সব সেকশন আগে হাইড করো
+    document.getElementById('home-sec').style.display = 'none';
+    document.getElementById('tasks-sec').style.display = 'none';
+    document.getElementById('withdraw-sec').style.display = 'none';
+
+    // শুধু যেটিতে ক্লিক করা হয়েছে সেটি দেখাও
+    document.getElementById(id + '-sec').style.display = 'block';
+
+    // মেনু আইকনের কালার পরিবর্তন
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
+
             }
         }
     };
