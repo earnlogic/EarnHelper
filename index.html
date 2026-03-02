@@ -3,261 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnHelper PRO - Microjob Platform</title>
+    <title>EarnHelper PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #2ecc71; --bg: #0b0b0b; --card: #161616; --text: #9ca3af; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        :root { --primary: #2ecc71; --bg: #0b0b0b; --card: #161616; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
         .container { padding: 20px; max-width: 480px; margin: auto; }
         
-        /* Auth UI */
+        /* Top Header & Menu */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #111; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 1000; }
+        .menu-icon { font-size: 24px; cursor: pointer; color: var(--primary); }
+        .side-menu { position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: #111; z-index: 2000; transition: 0.3s; padding-top: 60px; border-right: 1px solid #222; }
+        .menu-item { padding: 15px 25px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .menu-item:hover { background: #1a1a1a; color: var(--primary); }
+        
+        /* Auth & Cards */
         .auth-card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid #222; margin-top: 40px; }
-        .input-group { position: relative; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 14px; background: #1f1f1f; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; outline: none; }
-        .pass-toggle { position: absolute; right: 15px; top: 15px; color: var(--text); cursor: pointer; }
-        .btn { background: var(--primary); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        input, select { width: 100%; padding: 14px; background: #1f1f1f; border: 1px solid #333; color: white; border-radius: 12px; margin-bottom: 15px; outline: none; }
+        .btn { background: var(--primary); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #222; text-align: center; margin-bottom: 15px; }
         
-        /* WorkupJob Style Dashboard */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #111; border-bottom: 1px solid #222; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .mini-card { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid #222; text-align: center; }
-        .job-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* Floating AI & Nav */
-        #ai-widget { position: fixed; bottom: 90px; right: 20px; width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2000; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
-        #ai-window { display: none; position: fixed; bottom: 155px; right: 20px; width: 300px; height: 400px; background: #0f0f0f; border-radius: 15px; border: 1px solid #333; flex-direction: column; z-index: 2001; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 1000; }
-        .nav-item { color: var(--text); text-align: center; font-size: 11px; cursor: pointer; flex: 1; transition: 0.2s; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item i { font-size: 18px; display: block; margin-bottom: 4px; }
-        
-        /* Admin Panel Simple */
-        #admin-sec { background: #1a1a1a; padding: 15px; border-radius: 15px; display: none; }
+        /* Floating AI */
+        #ai-widget { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
+<body>
 
-    <body>
+<div id="sideMenu" class="side-menu">
+    <div style="position: absolute; top: 15px; right: 15px; font-size: 20px;" onclick="toggleMenu()"><i class="fa fa-times"></i></div>
+    <div class="menu-item" onclick="showSec('home')"><i class="fa fa-home"></i> Home</div>
+    <div class="menu-item" onclick="showSec('tasks')"><i class="fa fa-briefcase"></i> Find Jobs</div>
+    <div class="menu-item" onclick="showSec('withdraw')"><i class="fa fa-wallet"></i> Wallet</div>
+    <div class="menu-item" onclick="location.reload()"><i class="fa fa-sign-out-alt"></i> Logout</div>
+</div>
 
 <div id="authSection" class="container">
     <div class="auth-card">
-        <h2 id="authTitle" style="text-align: center; margin-bottom: 20px;">Create Account</h2>
-        
+        <h2 id="authTitle" style="text-align: center;">Create Account</h2>
         <div id="regFields">
-            <div class="input-group"><input type="text" id="regName" placeholder="Full Name"></div>
-            <div class="input-group">
-                <select id="regCountry" onchange="toggleOtherCountry(this.value)">
-                    <option value="Bangladesh">Bangladesh</option>
-                    <option value="India">India</option>
-                    <option value="USA">USA</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div id="otherCountryBox" style="display: none;" class="input-group">
-                <input type="text" id="customCountry" placeholder="Enter Country Name">
-            </div>
+            <input type="text" id="regName" placeholder="Full Name">
+            <select id="regCountry" onchange="document.getElementById('otherC').style.display=(this.value=='Other'?'block':'none')">
+                <option value="Bangladesh">Bangladesh</option><option value="Other">Other</option>
+            </select>
+            <input type="text" id="otherC" placeholder="Country Name" style="display:none">
         </div>
-
-        <div class="input-group"><input type="email" id="authEmail" placeholder="Email Address"></div>
-        <div class="input-group">
+        <input type="email" id="authEmail" placeholder="Email">
+        <div style="position:relative">
             <input type="password" id="authPass" placeholder="Password">
-            <i class="fa fa-eye pass-toggle" onclick="togglePassword()"></i>
+            <i class="fa fa-eye" style="position:absolute; right:15px; top:15px; color:#666;" onclick="tPass()"></i>
         </div>
-
-        <button class="btn" id="authBtn" onclick="handleAuth()">Sign Up</button>
-        
-        <div style="text-align: center; margin-top: 20px; font-size: 14px;">
-            <span id="toggleText">Already have an account?</span> 
-            <span onclick="switchAuth()" style="color: var(--primary); cursor: pointer; font-weight: bold;">Log In</span>
-        </div>
-        
-        <p id="forgotLink" style="text-align: center; font-size: 12px; display: none; cursor: pointer; color: var(--text); margin-top: 15px;" onclick="forgotPassword()">Forgot Password?</p>
+        <button class="btn" onclick="handleAuth()">Submit</button>
+        <p style="text-align:center; font-size:14px;" onclick="switchAuth()">Switch Login/Signup</p>
     </div>
 </div>
 
 <div id="dashboard" style="display: none;">
     <div class="header">
-        <div style="font-weight: bold; color: var(--primary);">EarnHelper PRO</div>
-        <div id="userRank" style="font-size: 11px; background: #333; padding: 3px 10px; border-radius: 15px;">BRONZE</div>
+        <div class="menu-icon" onclick="toggleMenu()"><i class="fa fa-bars"></i></div>
+        <div style="font-weight: bold;">EarnHelper PRO</div>
+        <div id="userRank" style="font-size: 10px; background: #333; padding: 4px 10px; border-radius: 10px;">BRONZE</div>
     </div>
 
     <div id="home-sec" class="container">
-        <div class="stat-grid">
-            <div class="mini-card">
-                <p style="font-size: 11px; color: var(--text); margin: 0;">Balance</p>
-                <h3 style="margin: 5px 0; color: var(--primary);">৳ <span id="balance">0.00</span></h3>
-            </div>
-            <div class="mini-card">
-                <p style="font-size: 11px; color: var(--text); margin: 0;">Completed</p>
-                <h3 style="margin: 5px 0;">0</h3>
-            </div>
+        <div class="stat-card">
+            <p style="color:#999; margin:0;">Total Balance</p>
+            <h2 style="color:var(--primary); margin:10px 0;">৳ <span id="balance">0.00</span></h2>
         </div>
-
-        <h3>Latest Jobs</h3>
-        <div id="jobList">
-            <div class="job-card">
-                <div>
-                    <div style="font-weight: bold; font-size: 14px;">Watch YT Video & Like</div>
-                    <div style="font-size: 11px; color: var(--text);">Reward: ৳ 5.00</div>
-                </div>
-                <button class="btn" style="width: auto; padding: 5px 12px; font-size: 11px;">Apply</button>
-            </div>
+        <h3>Available Tasks</h3>
+        <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="text-align:left;"><b>YT Subscribe</b><br><small>Earn ৳ 2.00</small></div>
+            <button class="btn" style="width:auto; padding:5px 15px;">Do It</button>
         </div>
     </div>
 
-    <div id="tasks-sec" class="container" style="display: none;">
-        <h3>Find Jobs</h3>
-        <div id="allJobs">
-            <p style="font-size: 12px; color: var(--text);">Search for micro-tasks to earn money...</p>
-        </div>
-    </div>
+    <div id="tasks-sec" class="container" style="display:none;"><h3>Job List</h3><p>Loading jobs...</p></div>
+    <div id="withdraw-sec" class="container" style="display:none;"><h3>Withdraw</h3><input type="number" placeholder="Amount"><button class="btn">Withdraw</button></div>
 
-    <div id="withdraw-sec" class="container" style="display: none;">
-        <h3>Withdraw Earnings</h3>
-        <div class="mini-card" style="text-align: left;">
-            <label style="font-size: 12px;">Method:</label>
-            <select id="wMethod" style="margin-bottom: 10px;"><option>BKash</option><option>Nagad</option></select>
-            <input type="number" id="wAmount" placeholder="Amount (Min 100)">
-            <button class="btn" style="margin-top: 10px;" onclick="requestWithdraw()">Submit Request</button>
-        </div>
-    </div>
+    <div id="ai-widget" onclick="alert('AI Coming Soon')"><i class="fa fa-robot" style="color:black; font-size:24px;"></i></div>
+</div>
 
-    <div id="ai-widget" onclick="toggleAI()"><i class="fa fa-robot" style="color: black; font-size: 24px;"></i></div>
-    
-    <div id="ai-window">
-        <div class="ai-header">
-            <span><i class="fa fa-robot"></i> Assistant</span>
-            <i class="fa fa-times" onclick="toggleAI()" style="cursor:pointer"></i>
-        </div>
-        <div id="ai-messages" style="padding: 15px; flex: 1; overflow-y: auto;">
-            <div class="b-msg msg">Hello! Ask me any question about earning.</div>
-        </div>
-        <div style="padding: 10px; display: flex; border-top: 1px solid #222;">
-            <input type="text" id="ai-input" placeholder="Ask something..." style="flex:1; padding: 8px; border-radius: 5px;">
-            <button onclick="askAI()" style="background: var(--primary); border: none; padding: 8px; border-radius: 5px; margin-left: 5px;"><i class="fa fa-paper-plane"></i></button>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" id="homeBtn" onclick="showSec('home')"><i class="fa fa-home"></i>Home</div>
-        <div class="nav-item" id="tasksBtn" onclick="showSec('tasks')"><i class="fa fa-briefcase"></i>Jobs</div>
-        <div class="nav-item" id="withdrawBtn" onclick="showSec('withdraw')"><i class="fa fa-wallet"></i>Wallet</div>
-        <div class="nav-item" onclick="logout()"><i class="fa fa-power-off"></i>Logout</div>
-    </div>
-                </div>
-
-        <script>
-    // Supabase Configuration
+<script>
     const sURL = 'https://xserxssnjdshehrefhvr.supabase.co';
     const sKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzZXJ4c3NuamRzaGVocmVmaHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzY4MTgsImV4cCI6MjA4NzQxMjgxOH0.Dow2NjohUNLgpDluVKcV4TBACCpDyCa31BH-tdLYik8';
     const supabaseClient = supabase.createClient(sURL, sKey);
+    let isLogin = false;
 
-    let isLoginMode = false; // Default starts with Registration
-
-    // Toggle Password Visibility
-    function togglePassword() {
-        const passInput = document.getElementById('authPass');
-        passInput.type = passInput.type === "password" ? "text" : "password";
+    function toggleMenu() { 
+        const m = document.getElementById('sideMenu');
+        m.style.left = m.style.left === '0px' ? '-250px' : '0px';
     }
 
-    // Toggle Other Country Input
-    function toggleOtherCountry(val) {
-        document.getElementById('otherCountryBox').style.display = (val === "Other") ? "block" : "none";
+    function showSec(id) {
+        ['home-sec', 'tasks-sec', 'withdraw-sec'].forEach(s => document.getElementById(s).style.display = 'none');
+        document.getElementById(id + '-sec').style.display = 'block';
+        toggleMenu();
     }
 
-    // Switch between Login and Sign Up
+    function tPass() { const p = document.getElementById('authPass'); p.type = p.type === 'password' ? 'text' : 'password'; }
+    
     function switchAuth() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('authTitle').innerText = isLoginMode ? "Welcome Back" : "Create Account";
-        document.getElementById('regFields').style.display = isLoginMode ? "none" : "block";
-        document.getElementById('authBtn').innerText = isLoginMode ? "Log In" : "Sign Up";
-        document.getElementById('toggleText').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
-        document.getElementById('forgotLink').style.display = isLoginMode ? "block" : "none";
+        isLogin = !isLogin;
+        document.getElementById('authTitle').innerText = isLogin ? "Login" : "Sign Up";
+        document.getElementById('regFields').style.display = isLogin ? "none" : "block";
     }
 
-    // Handle Authentication
     async function handleAuth() {
         const email = document.getElementById('authEmail').value;
         const pass = document.getElementById('authPass').value;
-        
-        if (isLoginMode) {
+        if(isLogin) {
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-            if (error) alert(error.message); else location.reload();
+            if(error) alert(error.message); else location.reload();
         } else {
             const name = document.getElementById('regName').value;
-            let country = document.getElementById('regCountry').value;
-            if (country === "Other") country = document.getElementById('customCountry').value;
-
             const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
-            if (error) return alert(error.message);
-            
-            // Create user profile in Database
-            await supabaseClient.from('profiles').insert([{ id: data.user.id, username: name, country: country, coins: 0 }]);
-            alert("Registration Success! Please check your email to verify.");
+            if(error) return alert(error.message);
+            await supabaseClient.from('profiles').insert([{ id: data.user.id, username: name, coins: 0 }]);
+            alert("Success! Check Email.");
         }
     }
 
-    // Section Navigation
-    function showSec(id) {
-        document.getElementById('home-sec').style.display = 'none';
-        document.getElementById('tasks-sec').style.display = 'none';
-        document.getElementById('withdraw-sec').style.display = 'none';
-        document.getElementById(id + '-sec').style.display = 'block';
-
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        document.getElementById(id + 'Btn').classList.add('active');
-    }
-
-    // Floating AI Toggle
-    function toggleAI() {
-        const win = document.getElementById('ai-window');
-        win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
-    }
-
-    // AI Chat Logic (Gemini API)
-    async function askAI() {
-        const input = document.getElementById('ai-input');
-        const box = document.getElementById('ai-messages');
-        if (!input.value) return;
-
-        box.innerHTML += `<div style="align-self: flex-end; background: var(--primary); color: black; padding: 8px; border-radius: 10px; margin-bottom: 5px; font-size: 13px;">${input.value}</div>`;
-        const userQuery = input.value;
-        input.value = "";
-
-        const botMsg = document.createElement('div');
-        botMsg.style = "align-self: flex-start; background: #222; padding: 8px; border-radius: 10px; margin-bottom: 5px; font-size: 13px; border: 1px solid #333;";
-        botMsg.innerText = "Thinking...";
-        box.appendChild(botMsg);
-        box.scrollTop = box.scrollHeight;
-
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }] })
-            });
-            const d = await res.json();
-            botMsg.innerText = d.candidates[0].content.parts[0].text;
-        } catch (e) { botMsg.innerText = "AI service is offline. Try again later."; }
-        box.scrollTop = box.scrollHeight;
-    }
-
-    // Load User Data on Start
     window.onload = async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
+        if(session) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            
             const { data } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-            if (data) {
-                document.getElementById('balance').innerText = data.coins.toFixed(2);
-                document.getElementById('userRank').innerText = data.coins > 5000 ? "GOLD" : "BRONZE";
-            }
+            if(data) document.getElementById('balance').innerText = data.coins.toFixed(2);
         }
     };
-
-    async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
-    async function forgotPassword() { alert("Check your email for the reset link!"); }
 </script>
 </body>
 </html>
