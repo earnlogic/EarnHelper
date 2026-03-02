@@ -3,84 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnHelper PRO</title>
+    <title>EarnHelper PRO - Advanced Microjob</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #2ecc71; --bg: #0b0b0b; --card: #161616; }
+        :root { --primary: #2ecc71; --bg: #0b0b0b; --card: #161616; --text: #9ca3af; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        .container { padding: 20px; max-width: 480px; margin: auto; }
+        .container { padding: 20px; max-width: 480px; margin: auto; padding-top: 70px; }
         
-        /* Top Header & Menu */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #111; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 1000; }
-        .menu-icon { font-size: 24px; cursor: pointer; color: var(--primary); }
-        .side-menu { position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: #111; z-index: 2000; transition: 0.3s; padding-top: 60px; border-right: 1px solid #222; }
-        .menu-item { padding: 15px 25px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .menu-item:hover { background: #1a1a1a; color: var(--primary); }
-        
-        /* Auth & Cards */
+        /* Top Navigation & Sidebar */
+        .top-header { position: fixed; top: 0; left: 0; width: 100%; background: #111; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; z-index: 1001; box-sizing: border-box; }
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #111; z-index: 2000; transition: 0.3s; overflow-y: auto; border-right: 1px solid #222; }
+        .sidebar.active { left: 0; }
+        .menu-cat { padding: 15px; color: var(--primary); font-size: 12px; font-weight: bold; border-top: 1px solid #222; text-transform: uppercase; }
+        .menu-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #1a1a1a; }
+        .menu-item:hover { background: #1a1a1a; }
+
+        /* Auth Cards */
         .auth-card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid #222; margin-top: 40px; }
-        input, select { width: 100%; padding: 14px; background: #1f1f1f; border: 1px solid #333; color: white; border-radius: 12px; margin-bottom: 15px; outline: none; }
-        .btn { background: var(--primary); color: black; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #222; text-align: center; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 14px; background: #1f1f1f; border: 1px solid #333; color: white; border-radius: 12px; margin-bottom: 12px; outline: none; }
+        .btn { background: var(--primary); color: black; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+
+        /* Dashboard UI */
+        .user-id-bar { background: #1a1a1a; padding: 10px; border-radius: 10px; font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid #222; text-align: center; }
         
-        /* Floating AI */
-        #ai-widget { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        /* AI Floating (Top Right) */
+        #ai-widget { position: fixed; top: 80px; right: 20px; width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #ai-window { display: none; position: fixed; top: 140px; right: 20px; width: 300px; height: 400px; background: #111; border-radius: 15px; border: 1px solid #333; flex-direction: column; z-index: 1001; }
+
+        /* Live Chat (Bottom Left) */
+        #live-chat { position: fixed; bottom: 20px; left: 20px; width: 45px; height: 45px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="sideMenu" class="side-menu">
-    <div style="position: absolute; top: 15px; right: 15px; font-size: 20px;" onclick="toggleMenu()"><i class="fa fa-times"></i></div>
-    <div class="menu-item" onclick="showSec('home')"><i class="fa fa-home"></i> Home</div>
-    <div class="menu-item" onclick="showSec('tasks')"><i class="fa fa-briefcase"></i> Find Jobs</div>
-    <div class="menu-item" onclick="showSec('withdraw')"><i class="fa fa-wallet"></i> Wallet</div>
-    <div class="menu-item" onclick="location.reload()"><i class="fa fa-sign-out-alt"></i> Logout</div>
+<div class="top-header" id="mainHeader" style="display:none;">
+    <div onclick="toggleSidebar()"><i class="fa fa-bars" style="font-size: 20px;"></i></div>
+    <div style="font-weight: bold; color: var(--primary);">EarnHelper PRO</div>
+    <div><i class="fa fa-bell"></i></div>
 </div>
 
-<div id="authSection" class="container">
+<div class="sidebar" id="sidebar">
+    <div style="padding: 20px; text-align: right;" onclick="toggleSidebar()"><i class="fa fa-times"></i></div>
+    
+    <div class="menu-cat">Profile</div>
+    <div class="menu-item" onclick="showSec('home')"><i class="fa fa-home"></i> Dashboard</div>
+    <div class="menu-item"><i class="fa fa-key"></i> Change Password</div>
+
+    <div class="menu-cat">Add Funds</div>
+    <div class="menu-item"><i class="fa fa-plus-circle"></i> Create Task</div>
+    <div class="menu-item"><i class="fa fa-tasks"></i> Manage Tasks</div>
+    <div class="menu-item"><i class="fa fa-university"></i> Deposit Option</div>
+
+    <div class="menu-cat">Performance</div>
+    <div class="menu-item"><i class="fa fa-medal"></i> Rank & Level</div>
+    <div class="menu-item"><i class="fa fa-users"></i> Refer & Team</div>
+
+    <div class="menu-cat">Withdraw</div>
+    <div class="menu-item" onclick="showSec('withdraw')"><i class="fa fa-wallet"></i> Payment Success Card</div>
+    <div class="menu-item"><i class="fa fa-history"></i> Withdraw History</div>
+
+    <div class="menu-cat">Support</div>
+    <div class="menu-item"><i class="fa fa-headset"></i> Contact Us</div>
+    <div class="menu-item"><i class="fa fa-server"></i> Our Services</div>
+    <div class="menu-item" onclick="location.reload()"><i class="fa fa-power-off"></i> Logout</div>
+</div>
+
+<div id="authSection" class="container" style="padding-top: 20px;">
     <div class="auth-card">
-        <h2 id="authTitle" style="text-align: center;">Create Account</h2>
+        <h2 id="authTitle" style="text-align: center;">Join EarnHelper</h2>
         <div id="regFields">
             <input type="text" id="regName" placeholder="Full Name">
-            <select id="regCountry" onchange="document.getElementById('otherC').style.display=(this.value=='Other'?'block':'none')">
-                <option value="Bangladesh">Bangladesh</option><option value="Other">Other</option>
+            <select id="regCountry">
+                <option value="Bangladesh">Bangladesh</option>
+                <option value="Global">Global</option>
             </select>
-            <input type="text" id="otherC" placeholder="Country Name" style="display:none">
         </div>
         <input type="email" id="authEmail" placeholder="Email">
-        <div style="position:relative">
-            <input type="password" id="authPass" placeholder="Password">
-            <i class="fa fa-eye" style="position:absolute; right:15px; top:15px; color:#666;" onclick="tPass()"></i>
-        </div>
-        <button class="btn" onclick="handleAuth()">Submit</button>
-        <p style="text-align:center; font-size:14px;" onclick="switchAuth()">Switch Login/Signup</p>
+        <input type="password" id="authPass" placeholder="Password">
+        <button class="btn" onclick="handleAuth()">Access Now</button>
+        <p style="text-align:center; font-size:13px; margin-top:15px;" onclick="switchAuth()">Already have an account? Login</p>
     </div>
 </div>
 
 <div id="dashboard" style="display: none;">
-    <div class="header">
-        <div class="menu-icon" onclick="toggleMenu()"><i class="fa fa-bars"></i></div>
-        <div style="font-weight: bold;">EarnHelper PRO</div>
-        <div id="userRank" style="font-size: 10px; background: #333; padding: 4px 10px; border-radius: 10px;">BRONZE</div>
-    </div>
+    <div class="container">
+        <div class="user-id-bar">
+            <span>ID: <b id="uID">#0000</b></span>
+            <span>Lang: <b>EN/BN</b></span>
+        </div>
 
-    <div id="home-sec" class="container">
         <div class="stat-card">
-            <p style="color:#999; margin:0;">Total Balance</p>
-            <h2 style="color:var(--primary); margin:10px 0;">৳ <span id="balance">0.00</span></h2>
+            <p style="color:var(--text); margin:0;">Total Balance</p>
+            <h2 style="color:var(--primary); margin:5px 0;">৳ <span id="balance">0.00</span></h2>
         </div>
-        <h3>Available Tasks</h3>
-        <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="text-align:left;"><b>YT Subscribe</b><br><small>Earn ৳ 2.00</small></div>
-            <button class="btn" style="width:auto; padding:5px 15px;">Do It</button>
+
+        <h3 style="margin-top:20px;">Leaderboard Top 3</h3>
+        <div class="stat-card" style="text-align:left; font-size:13px;">
+            <div>1. User #8822 - ৳ 5,200</div>
+            <hr style="border:0.5px solid #222;">
+            <div>2. User #1029 - ৳ 4,850</div>
+            <hr style="border:0.5px solid #222;">
+            <div>3. User #3391 - ৳ 3,900</div>
         </div>
     </div>
 
-    <div id="tasks-sec" class="container" style="display:none;"><h3>Job List</h3><p>Loading jobs...</p></div>
-    <div id="withdraw-sec" class="container" style="display:none;"><h3>Withdraw</h3><input type="number" placeholder="Amount"><button class="btn">Withdraw</button></div>
+    <div id="ai-widget" onclick="toggleAI()"><i class="fa fa-robot" style="color:black; font-size:24px;"></i></div>
+    <div id="ai-window">
+        <div style="background:#222; padding:12px; display:flex; justify-content:space-between; border-radius:15px 15px 0 0;">
+            <span>AI Assistant</span><i class="fa fa-times" onclick="toggleAI()"></i>
+        </div>
+        <div id="ai-messages" style="flex:1; padding:10px; overflow-y:auto; font-size:13px;"></div>
+        <div style="padding:10px; display:flex; gap:5px;">
+            <input type="text" id="ai-input" placeholder="Ask AI..." style="margin:0; padding:8px;">
+            <button onclick="askAI()" style="background:var(--primary); border:none; padding:8px; border-radius:5px;"><i class="fa fa-paper-plane"></i></button>
+        </div>
+    </div>
 
-    <div id="ai-widget" onclick="alert('AI Coming Soon')"><i class="fa fa-robot" style="color:black; font-size:24px;"></i></div>
+    <div id="live-chat" onclick="alert('Live Support Coming!')"><i class="fa fa-comment-dots"></i></div>
 </div>
 
 <script>
@@ -89,22 +130,15 @@
     const supabaseClient = supabase.createClient(sURL, sKey);
     let isLogin = false;
 
-    function toggleMenu() { 
-        const m = document.getElementById('sideMenu');
-        m.style.left = m.style.left === '0px' ? '-250px' : '0px';
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    function toggleAI() { 
+        const win = document.getElementById('ai-window');
+        win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
     }
 
-    function showSec(id) {
-        ['home-sec', 'tasks-sec', 'withdraw-sec'].forEach(s => document.getElementById(s).style.display = 'none');
-        document.getElementById(id + '-sec').style.display = 'block';
-        toggleMenu();
-    }
-
-    function tPass() { const p = document.getElementById('authPass'); p.type = p.type === 'password' ? 'text' : 'password'; }
-    
     function switchAuth() {
         isLogin = !isLogin;
-        document.getElementById('authTitle').innerText = isLogin ? "Login" : "Sign Up";
+        document.getElementById('authTitle').innerText = isLogin ? "Login Now" : "Join EarnHelper";
         document.getElementById('regFields').style.display = isLogin ? "none" : "block";
     }
 
@@ -123,15 +157,36 @@
         }
     }
 
+    async function askAI() {
+        const input = document.getElementById('ai-input');
+        const box = document.getElementById('ai-messages');
+        const text = input.value; 
+        if(!text) return;
+        input.value = "";
+        box.innerHTML += `<div><b>You:</b> ${text}</div>`;
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+            });
+            const d = await res.json();
+            box.innerHTML += `<div style="color:var(--primary);"><b>AI:</b> ${d.candidates[0].content.parts[0].text}</div>`;
+        } catch(e) { box.innerHTML += `<div>AI Error</div>`; }
+    }
+
     window.onload = async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if(session) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('mainHeader').style.display = 'flex';
             const { data } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-            if(data) document.getElementById('balance').innerText = data.coins.toFixed(2);
+            if(data) {
+                document.getElementById('balance').innerText = data.coins.toFixed(2);
+                document.getElementById('uID').innerText = "#" + data.id.substring(0,4);
+            }
         }
     };
 </script>
 </body>
-</html>
+    </html>
