@@ -3,237 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Logic - Full Service Platform</title>
+    <title>Earn Logic - Advanced UI</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; --gold: #ffd700; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 70px; }
 
-        /* Navbar */
-        .navbar { background: #111; padding: 0 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; height: 70px; }
-        .logo { font-weight: bold; color: var(--primary); font-size: 22px; text-decoration: none; }
-        
-        /* Desktop Menu & Hover Effect */
-        .nav-links { display: flex; list-style: none; margin: 0; padding: 0; height: 100%; }
-        .nav-item { position: relative; height: 100%; display: flex; align-items: center; padding: 0 15px; cursor: pointer; }
-        .nav-item a { color: #ccc; text-decoration: none; font-size: 14px; transition: 0.3s; }
-        .nav-item:hover > a { color: var(--primary); }
-        
-        /* Dropdown Style */
-        .dropdown { position: absolute; top: 70px; left: 0; background: #111; min-width: 220px; display: none; border: 1px solid #222; border-radius: 0 0 8px 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .nav-item:hover .dropdown { display: block; animation: fadeIn 0.3s ease; }
-        .dropdown a { padding: 12px 20px; display: block; font-size: 13px; color: #aaa; border-bottom: 1px solid #1a1a1a; text-decoration: none; }
-        .dropdown a:hover { background: #1a1a1a; color: var(--primary); padding-left: 25px; }
-        
-        /* Indicators */
-        .fa-chevron-down { font-size: 10px; margin-left: 6px; opacity: 0.6; transition: 0.3s; }
-        .nav-item:hover .fa-chevron-down { transform: rotate(180deg); color: var(--primary); }
-
-        /* Mobile View Hamburger */
-        .hamburger { display: none; font-size: 24px; cursor: pointer; color: var(--primary); }
-        .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; padding-top: 60px; overflow-y: auto; }
+        /* Navbar & Sidebar */
+        .navbar { background: #111; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; }
+        .sidebar { position: fixed; left: -300px; top: 0; width: 300px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
         .sidebar.active { left: 0; }
-        .sidebar-link { padding: 15px 25px; display: block; color: white; text-decoration: none; border-bottom: 1px solid #1a1a1a; font-size: 16px; }
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .close-btn { font-size: 24px; cursor: pointer; color: var(--primary); }
 
-        /* AI & Notification */
-        .ai-bot { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px var(--primary); cursor: pointer; z-index: 2000; animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .noti { background: #1a1a1a; padding: 10px; text-align: center; font-size: 12px; border-bottom: 1px solid #333; margin-top: 70px; color: var(--primary); }
+        /* Dropdown UI */
+        .menu-btn { width: 100%; text-align: left; padding: 15px 25px; background: none; border: none; color: white; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; }
+        .dropdown-container { display: none; background: #151515; }
+        .dropdown-container a { display: block; padding: 12px 40px; color: #aaa; text-decoration: none; font-size: 14px; border-bottom: 1px solid #222; }
 
-        /* Auth/Main Container */
-        .main-container { max-width: 1100px; margin: 50px auto; padding: 20px; text-align: center; }
-        .auth-card { background: var(--card); max-width: 400px; margin: 40px auto; padding: 30px; border-radius: 20px; border: 1px solid #222; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
-        .btn-action { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
-
-        /* Footer Menu */
-        .footer { background: #0d0d0d; padding: 50px 20px; border-top: 1px solid #222; margin-top: 100px; text-align: center; }
-        .footer-links a { color: #666; text-decoration: none; margin: 0 15px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
-
-        @media (max-width: 992px) { .nav-links { display: none; } .hamburger { display: block; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Form Styling */
+        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; max-width: 400px; margin: 20px auto; position: relative; }
+        .input-group { position: relative; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
+        .eye-icon { position: absolute; right: 15px; top: 12px; cursor: pointer; color: #555; }
+        .terms { font-size: 12px; color: #888; display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+        
+        #other-country-div { display: none; margin-top: 10px; }
+        .btn-main { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-        <a href="#" class="logo">EARN LOGIC</a>
-        
-        <ul class="nav-links">
-            <li class="nav-item"><a href="#">Home</a></li>
-            
-            <li class="nav-item">
-                <a href="#">Dashboard <i class="fas fa-chevron-down"></i></a>
-                <div class="dropdown">
-                    <a href="#">My Tasks</a>
-                    <a href="#">Completed Tasks</a>
-                    <a href="#">Pending Review</a>
-                    <a href="#">Earnings</a>
-                    <a href="#">Withdraw</a>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a href="#">Find Jobs <i class="fas fa-chevron-down"></i></a>
-                <div class="dropdown">
-                    <a href="#">All Jobs</a>
-                    <a href="#">Micro Task</a>
-                    <a href="#">Auto Task</a>
-                    <a href="#">CPA</a>
-                    <a href="#">Ads Earn</a>
-                    <a href="#">High Paying Jobs</a>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a href="#">Post a Job <i class="fas fa-chevron-down"></i></a>
-                <div class="dropdown">
-                    <a href="#">Create New Campaign</a>
-                    <a href="#">Manage My Jobs</a>
-                    <a href="#">Review Submissions</a>
-                    <a href="#">Pricing Plans</a>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a href="#">Wallet <i class="fas fa-chevron-down"></i></a>
-                <div class="dropdown">
-                    <a href="#">Deposit</a>
-                    <a href="#">Withdraw Card</a>
-                    <a href="#">Transaction History</a>
-                    <a href="#">Earnings Report</a>
-                </div>
-            </li>
-        </ul>
-        <div style="font-size: 12px; color: #888;">EN | BN</div>
+        <div onclick="toggleSidebar()"><i class="fas fa-bars" style="font-size: 24px; color: var(--primary); cursor: pointer;"></i></div>
+        <div style="font-weight:bold; color:var(--primary); font-size:20px;">EARN LOGIC</div>
+        <div id="user-display" style="font-size:12px; color:#777;">Guest</div>
     </nav>
 
     <div id="sidebar" class="sidebar">
-        <a href="#" class="sidebar-link">Home</a>
-        <a href="#" class="sidebar-link">Dashboard</a>
-        <a href="#" class="sidebar-link">Find Jobs</a>
-        <a href="#" class="sidebar-link">Post Job</a>
-        <a href="#" class="sidebar-link">Wallet</a>
-        <a href="#" class="sidebar-link">Leaderboard</a>
-        <a href="#" onclick="logout()" class="sidebar-link" style="color:red">Logout</a>
-    </div>
-
-    <div class="noti">🔔 Update: 1000 Coins = 100 BDT. New CPA Tasks Added!</div>
-
-    <div class="main-container">
+        <div class="sidebar-header">
+            <span style="color: var(--primary); font-weight: bold;">MENU</span>
+            <div class="close-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></div>
+        </div>
+        <button class="menu-btn" onclick="location.reload()">Home</button>
         
-        <div id="welcome-ui">
-            <h1 style="font-size: 40px; margin-bottom: 10px;">The Future of <span style="color:var(--primary)">Digital Earning</span></h1>
-            <p style="color:#777;">Join the biggest community of micro-workers and freelancers.</p>
-            
-            <div class="auth-card" id="login-form">
-                <h3 style="margin-top:0">Login</h3>
-                <input type="email" id="l-email" placeholder="Email Address">
+        <button class="menu-btn dash-toggle">Dashboard <i class="fas fa-chevron-down"></i></button>
+        <div class="dropdown-container">
+            <a href="#">My Tasks</a>
+            <a href="#">Earnings</a>
+            <a href="#">Withdraw</a>
+        </div>
+
+        <button class="menu-btn dash-toggle">Find Jobs <i class="fas fa-chevron-down"></i></button>
+        <div class="dropdown-container">
+            <a href="#">Micro Tasks</a>
+            <a href="#">CPA Offers</a>
+        </div>
+        <button class="menu-btn" onclick="logout()" style="color:red">Logout</button>
+    </div>
+
+    <div class="card" id="auth-container">
+        <div id="signup-form">
+            <h2>Sign Up</h2>
+            <div class="input-group"><input type="text" id="s-user" placeholder="Username"></div>
+            <div class="input-group"><input type="email" id="s-email" placeholder="Email Address"></div>
+            <div class="input-group">
+                <input type="password" id="s-pass" placeholder="Password">
+                <i class="fas fa-eye eye-icon" onclick="togglePass('s-pass')"></i>
+            </div>
+            <select id="s-country" onchange="checkCountry(this.value)">
+                <option value="Bangladesh">Bangladesh</option>
+                <option value="India">India</option>
+                <option value="Other">Other...</option>
+            </select>
+            <div id="other-country-div"><input type="text" id="s-other-country" placeholder="Enter Country Name"></div>
+            <div class="terms">
+                <input type="checkbox" id="terms-check"> I agree to Terms & Conditions
+            </div>
+            <button class="btn-main" onclick="register()">Create Account</button>
+            <p onclick="toggleForm()" style="cursor:pointer; font-size:14px; margin-top:15px; color:#555">Already a member? Login</p>
+        </div>
+
+        <div id="login-form" style="display:none">
+            <h2>Login</h2>
+            <div class="input-group"><input type="email" id="l-email" placeholder="Email"></div>
+            <div class="input-group">
                 <input type="password" id="l-pass" placeholder="Password">
-                <button class="btn-action" onclick="login()">Sign In</button>
-                <p style="font-size:12px; color:var(--primary); cursor:pointer; margin-top:15px">Forget Password?</p>
-                <p onclick="toggleForm()" style="cursor:pointer; font-size:14px; color:#555">Don't have an account? <span style="color:var(--primary)">Register</span></p>
+                <i class="fas fa-eye eye-icon" onclick="togglePass('l-pass')"></i>
             </div>
-
-            <div class="auth-card" id="signup-form" style="display:none">
-                <h3 style="margin-top:0">Sign Up</h3>
-                <input type="email" id="s-email" placeholder="Email Address">
-                <input type="password" id="s-pass" placeholder="Create Password">
-                <select id="s-country">
-                    <option value="">Select Country</option>
-                    <option value="Bangladesh">Bangladesh</option>
-                    <option value="India">India</option>
-                </select>
-                <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
-                <button class="btn-action" onclick="register()">Create Account</button>
-                <p onclick="toggleForm()" style="cursor:pointer; font-size:14px; color:#555; margin-top:15px">Already a member? <span style="color:var(--primary)">Login</span></p>
-            </div>
+            <button class="btn-main" onclick="login()">Login</button>
+            <p onclick="toggleForm()" style="cursor:pointer; font-size:14px; margin-top:15px; color:#555">New here? Register</p>
         </div>
-
-        <div id="dashboard-ui" style="display:none">
-            <div style="background:linear-gradient(135deg, #111, #000); padding:40px; border-radius:25px; border:1px solid #333;">
-                <p style="color:#888; margin:0">Your Total Balance</p>
-                <h1 style="font-size: 50px; color:var(--primary); margin:10px 0;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
-                <div style="font-size:18px; color:var(--gold)">≈ ৳ <span id="tk">0.00</span> | ≈ $ <span id="usd">0.00</span></div>
-            </div>
-            </div>
     </div>
 
-    <div class="ai-bot" onclick="alert('AI Assistant: Hello! How can I help you today?')">
-        <i class="fas fa-robot" style="font-size:26px; color:white"></i>
-    </div>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
+            authDomain: "earn-logic.firebaseapp.com",
+            projectId: "earn-logic",
+            storageBucket: "earn-logic.firebasestorage.app",
+            messagingSenderId: "254063437159",
+            appId: "1:254063437159:web:a8e118c33c924bd48c3bc2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-    <div class="footer">
-        <div class="footer-links">
-            <a href="#">About Us</a>
-            <a href="#">Terms & Conditions</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Refund Policy</a>
-            <a href="#">Halal Task Guidelines</a>
-        </div>
-        <p style="color:#333; font-size:10px; margin-top:20px">© 2026 Earn Logic. All rights reserved.</p>
-    </div>
+        // UI Toggles
+        function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
+        function toggleForm() {
+            document.getElementById("login-form").style.display = document.getElementById("login-form").style.display === "none" ? "block" : "none";
+            document.getElementById("signup-form").style.display = document.getElementById("signup-form").style.display === "none" ? "block" : "none";
+        }
+        function togglePass(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+        function checkCountry(val) {
+            document.getElementById("other-country-div").style.display = val === "Other" ? "block" : "none";
+        }
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
-        authDomain: "earn-logic.firebaseapp.com",
-        projectId: "earn-logic",
-        storageBucket: "earn-logic.firebasestorage.app",
-        messagingSenderId: "254063437159",
-        appId: "1:254063437159:web:a8e118c33c924bd48c3bc2",
-        measurementId: "G-BK3796BFLR"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
-    function toggleForm() {
-        const login = document.getElementById("login-form");
-        const signup = document.getElementById("signup-form");
-        login.style.display = login.style.display === "none" ? "block" : "none";
-        signup.style.display = signup.style.display === "none" ? "block" : "none";
-    }
-
-    async function login() {
-        const e = document.getElementById('l-email').value;
-        const p = document.getElementById('l-pass').value;
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert(err.message); }
-    }
-
-    async function register() {
-        const e = document.getElementById('s-email').value;
-        const p = document.getElementById('s-pass').value;
-        const c = document.getElementById('s-country').value;
-        const r = document.getElementById('s-refer').value;
-        if(!c) return alert("Please select your country");
-        try {
-            const res = await auth.createUserWithEmailAndPassword(e, p);
-            await db.collection('users').doc(res.user.uid).set({ email:e, country:c, refer:r, coins:0 });
-        } catch(err) { alert(err.message); }
-    }
-
-    auth.onAuthStateChanged(user => {
-        if(user) {
-            document.getElementById('welcome-ui').style.display = 'none';
-            document.getElementById('dashboard-ui').style.display = 'block';
-            db.collection('users').doc(user.uid).onSnapshot(doc => {
-                const c = doc.data().coins || 0;
-                document.getElementById('coins').innerText = c;
-                document.getElementById('tk').innerText = (c * 0.1).toFixed(2);
-                document.getElementById('usd').innerText = (c / 1200).toFixed(2);
+        // Dropdown Click Logic
+        const toggles = document.getElementsByClassName("dash-toggle");
+        for (let i = 0; i < toggles.length; i++) {
+            toggles[i].addEventListener("click", function() {
+                const container = this.nextElementSibling;
+                container.style.display = container.style.display === "block" ? "none" : "block";
             });
         }
-    });
 
-    function logout() { auth.signOut().then(() => location.reload()); }
-</script>
+        // Auth Logic
+        async function register() {
+            const user = document.getElementById('s-user').value;
+            const email = document.getElementById('s-email').value;
+            const pass = document.getElementById('s-pass').value;
+            const check = document.getElementById('terms-check').checked;
+            if(!check) return alert("Please accept Terms and Conditions");
+            
+            try {
+                const res = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.collection('users').doc(res.user.uid).set({ username: user, coins: 0 });
+                alert("Registration Successful!");
+            } catch(e) { alert(e.message); }
+        }
+
+        async function login() {
+            const email = document.getElementById('l-email').value;
+            const pass = document.getElementById('l-pass').value;
+            try { await auth.signInWithEmailAndPassword(email, pass); } catch(e) { alert(e.message); }
+        }
+
+        auth.onAuthStateChanged(u => {
+            if(u) {
+                document.getElementById('auth-container').innerHTML = "<h2>Welcome to Dashboard</h2><p>You are logged in.</p>";
+                document.getElementById('user-display').innerText = u.email;
+            }
+        });
+
+        function logout() { auth.signOut().then(() => location.reload()); }
+    </script>
 </body>
 </html>
