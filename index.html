@@ -3,150 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnHelper PRO</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Earn Logic - Full Service Platform</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #2ecc71; --bg: #0b0b0b; --card: #161616; --text: #9ca3af; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
+        :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; --gold: #ffd700; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+
+        /* Navbar */
+        .navbar { background: #111; padding: 0 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; height: 70px; }
+        .logo { font-weight: bold; color: var(--primary); font-size: 22px; text-decoration: none; }
         
-        /* Sidebar & Header */
-        .header { position: fixed; top: 0; width: 100%; background: #111; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; }
-        .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #111; z-index: 2000; transition: 0.3s; border-right: 1px solid #222; overflow-y: auto; }
+        /* Desktop Menu & Hover Effect */
+        .nav-links { display: flex; list-style: none; margin: 0; padding: 0; height: 100%; }
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; padding: 0 15px; cursor: pointer; }
+        .nav-item a { color: #ccc; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .nav-item:hover > a { color: var(--primary); }
+        
+        /* Dropdown Style */
+        .dropdown { position: absolute; top: 70px; left: 0; background: #111; min-width: 220px; display: none; border: 1px solid #222; border-radius: 0 0 8px 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .nav-item:hover .dropdown { display: block; animation: fadeIn 0.3s ease; }
+        .dropdown a { padding: 12px 20px; display: block; font-size: 13px; color: #aaa; border-bottom: 1px solid #1a1a1a; text-decoration: none; }
+        .dropdown a:hover { background: #1a1a1a; color: var(--primary); padding-left: 25px; }
+        
+        /* Indicators */
+        .fa-chevron-down { font-size: 10px; margin-left: 6px; opacity: 0.6; transition: 0.3s; }
+        .nav-item:hover .fa-chevron-down { transform: rotate(180deg); color: var(--primary); }
+
+        /* Mobile View Hamburger */
+        .hamburger { display: none; font-size: 24px; cursor: pointer; color: var(--primary); }
+        .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; padding-top: 60px; overflow-y: auto; }
         .sidebar.active { left: 0; }
-        .m-item { padding: 15px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid #1a1a1a; }
+        .sidebar-link { padding: 15px 25px; display: block; color: white; text-decoration: none; border-bottom: 1px solid #1a1a1a; font-size: 16px; }
 
-        /* Floating AI (Top Right) */
-        #ai-btn { position: fixed; top: 75px; right: 20px; width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 999; color: black; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); cursor: pointer; }
-        
-        /* Auth Section */
-        .container { padding: 80px 20px 20px; max-width: 480px; margin: auto; }
-        input, select { width: 100%; padding: 14px; background: #1f1f1f; border: 1px solid #333; color: white; border-radius: 12px; margin-bottom: 12px; outline: none; box-sizing: border-box; }
-        .btn { background: var(--primary); color: black; border: none; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
+        /* AI & Notification */
+        .ai-bot { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px var(--primary); cursor: pointer; z-index: 2000; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .noti { background: #1a1a1a; padding: 10px; text-align: center; font-size: 12px; border-bottom: 1px solid #333; margin-top: 70px; color: var(--primary); }
 
-        /* Dashboard Items */
-        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #222; margin-bottom: 15px; text-align: center; }
-        #ai-box { display: none; position: fixed; top: 135px; right: 20px; width: 280px; height: 350px; background: #000; border: 1px solid #333; border-radius: 12px; flex-direction: column; z-index: 1001; }
+        /* Auth/Main Container */
+        .main-container { max-width: 1100px; margin: 50px auto; padding: 20px; text-align: center; }
+        .auth-card { background: var(--card); max-width: 400px; margin: 40px auto; padding: 30px; border-radius: 20px; border: 1px solid #222; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
+        .btn-action { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
+
+        /* Footer Menu */
+        .footer { background: #0d0d0d; padding: 50px 20px; border-top: 1px solid #222; margin-top: 100px; text-align: center; }
+        .footer-links a { color: #666; text-decoration: none; margin: 0 15px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
+
+        @media (max-width: 992px) { .nav-links { display: none; } .hamburger { display: block; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div id="authSection" class="container" style="padding-top: 40px;">
-    <div class="card">
-        <h2 id="atitle">Create Account</h2>
-        <div id="regFields">
-            <input type="text" id="regName" placeholder="Full Name">
-            <select id="regCountry" onchange="document.getElementById('oc').style.display=(this.value=='Other'?'block':'none')">
-                <option value="Bangladesh">Bangladesh</option><option value="Other">Other</option>
-            </select>
-            <input type="text" id="oc" placeholder="Country Name" style="display:none">
-        </div>
-        <input type="email" id="email" placeholder="Email">
-        <div style="position:relative">
-            <input type="password" id="pass" placeholder="Password">
-            <i class="fa fa-eye" style="position:absolute; right:15px; top:15px; color:#666;" onclick="tp()"></i>
-        </div>
-        <button class="btn" onclick="auth()">Submit</button>
-        <p style="font-size:12px; margin-top:15px; cursor:pointer;" onclick="sw()">Switch Login/Register</p>
-    </div>
-</div>
+    <nav class="navbar">
+        <div class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+        <a href="#" class="logo">EARN LOGIC</a>
+        
+        <ul class="nav-links">
+            <li class="nav-item"><a href="#">Home</a></li>
+            
+            <li class="nav-item">
+                <a href="#">Dashboard <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown">
+                    <a href="#">My Tasks</a>
+                    <a href="#">Completed Tasks</a>
+                    <a href="#">Pending Review</a>
+                    <a href="#">Earnings</a>
+                    <a href="#">Withdraw</a>
+                </div>
+            </li>
 
-<div id="dashboard" style="display:none">
-    <div class="header">
-        <i class="fa fa-bars" onclick="tm()"></i>
-        <b>EARNHELPER PRO</b>
-        <i class="fa fa-bell"></i>
+            <li class="nav-item">
+                <a href="#">Find Jobs <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown">
+                    <a href="#">All Jobs</a>
+                    <a href="#">Micro Task</a>
+                    <a href="#">Auto Task</a>
+                    <a href="#">CPA</a>
+                    <a href="#">Ads Earn</a>
+                    <a href="#">High Paying Jobs</a>
+                </div>
+            </li>
+
+            <li class="nav-item">
+                <a href="#">Post a Job <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown">
+                    <a href="#">Create New Campaign</a>
+                    <a href="#">Manage My Jobs</a>
+                    <a href="#">Review Submissions</a>
+                    <a href="#">Pricing Plans</a>
+                </div>
+            </li>
+
+            <li class="nav-item">
+                <a href="#">Wallet <i class="fas fa-chevron-down"></i></a>
+                <div class="dropdown">
+                    <a href="#">Deposit</a>
+                    <a href="#">Withdraw Card</a>
+                    <a href="#">Transaction History</a>
+                    <a href="#">Earnings Report</a>
+                </div>
+            </li>
+        </ul>
+        <div style="font-size: 12px; color: #888;">EN | BN</div>
+    </nav>
+
+    <div id="sidebar" class="sidebar">
+        <a href="#" class="sidebar-link">Home</a>
+        <a href="#" class="sidebar-link">Dashboard</a>
+        <a href="#" class="sidebar-link">Find Jobs</a>
+        <a href="#" class="sidebar-link">Post Job</a>
+        <a href="#" class="sidebar-link">Wallet</a>
+        <a href="#" class="sidebar-link">Leaderboard</a>
+        <a href="#" onclick="logout()" class="sidebar-link" style="color:red">Logout</a>
     </div>
 
-    <div class="sidebar" id="sb">
-        <div style="padding:20px; text-align:right" onclick="tm()"><i class="fa fa-times"></i></div>
-        <div class="m-item" onclick="sec('h')"><i class="fa fa-home"></i> Dashboard</div>
-        <div class="m-item"><i class="fa fa-key"></i> Change Password</div>
-        <div class="m-item"><i class="fa fa-plus-circle"></i> Create Task</div>
-        <div class="m-item"><i class="fa fa-wallet"></i> Withdraw Story</div>
-        <div class="m-item" onclick="location.reload()"><i class="fa fa-power-off"></i> Logout</div>
+    <div class="noti">🔔 Update: 1000 Coins = 100 BDT. New CPA Tasks Added!</div>
+
+    <div class="main-container">
+        
+        <div id="welcome-ui">
+            <h1 style="font-size: 40px; margin-bottom: 10px;">The Future of <span style="color:var(--primary)">Digital Earning</span></h1>
+            <p style="color:#777;">Join the biggest community of micro-workers and freelancers.</p>
+            
+            <div class="auth-card" id="login-form">
+                <h3 style="margin-top:0">Login</h3>
+                <input type="email" id="l-email" placeholder="Email Address">
+                <input type="password" id="l-pass" placeholder="Password">
+                <button class="btn-action" onclick="login()">Sign In</button>
+                <p style="font-size:12px; color:var(--primary); cursor:pointer; margin-top:15px">Forget Password?</p>
+                <p onclick="toggleForm()" style="cursor:pointer; font-size:14px; color:#555">Don't have an account? <span style="color:var(--primary)">Register</span></p>
+            </div>
+
+            <div class="auth-card" id="signup-form" style="display:none">
+                <h3 style="margin-top:0">Sign Up</h3>
+                <input type="email" id="s-email" placeholder="Email Address">
+                <input type="password" id="s-pass" placeholder="Create Password">
+                <select id="s-country">
+                    <option value="">Select Country</option>
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="India">India</option>
+                </select>
+                <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
+                <button class="btn-action" onclick="register()">Create Account</button>
+                <p onclick="toggleForm()" style="cursor:pointer; font-size:14px; color:#555; margin-top:15px">Already a member? <span style="color:var(--primary)">Login</span></p>
+            </div>
+        </div>
+
+        <div id="dashboard-ui" style="display:none">
+            <div style="background:linear-gradient(135deg, #111, #000); padding:40px; border-radius:25px; border:1px solid #333;">
+                <p style="color:#888; margin:0">Your Total Balance</p>
+                <h1 style="font-size: 50px; color:var(--primary); margin:10px 0;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
+                <div style="font-size:18px; color:var(--gold)">≈ ৳ <span id="tk">0.00</span> | ≈ $ <span id="usd">0.00</span></div>
+            </div>
+            </div>
     </div>
 
-    <div id="ai-btn" onclick="tai()"><i class="fa fa-robot"></i></div>
-
-    <div class="container">
-        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:10px;">
-            <span id="uid">ID: #0000</span>
-            <span>Language: BN/EN</span>
-        </div>
-        <div class="card">
-            <small style="color:#888">Main Balance</small>
-            <h1 style="color:var(--primary); margin:5px 0;">৳ <span id="bal">0.00</span></h1>
-            <button class="btn" style="padding:8px; font-size:12px;">Leaderboard</button>
-        </div>
-        <div id="jobs"><h3>Available Tasks</h3><p>Loading...</p></div>
+    <div class="ai-bot" onclick="alert('AI Assistant: Hello! How can I help you today?')">
+        <i class="fas fa-robot" style="font-size:26px; color:white"></i>
     </div>
 
-    <div id="ai-box">
-        <div style="background:#222; padding:10px; display:flex; justify-content:space-between;">
-            <span>AI Assistant</span><i class="fa fa-times" onclick="tai()"></i>
+    <div class="footer">
+        <div class="footer-links">
+            <a href="#">About Us</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Refund Policy</a>
+            <a href="#">Halal Task Guidelines</a>
         </div>
-        <div id="msgs" style="flex:1; overflow-y:auto; padding:10px; font-size:13px;"></div>
-        <div style="padding:10px; display:flex; gap:5px;">
-            <input type="text" id="ait" style="margin:0; padding:8px;">
-            <button onclick="askAI()" class="btn" style="width:auto; padding:8px 15px;">Send</button>
-        </div>
+        <p style="color:#333; font-size:10px; margin-top:20px">© 2026 Earn Logic. All rights reserved.</p>
     </div>
-</div>
 
 <script>
-    const sURL = 'https://xserxssnjdshehrefhvr.supabase.co';
-    const sKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzZXJ4c3NuamRzaGVocmVmaHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzY4MTgsImV4cCI6MjA4NzQxMjgxOH0.Dow2NjohUNLgpDluVKcV4TBACCpDyCa31BH-tdLYik8';
-    const sb = supabase.createClient(sURL, sKey);
-    let isl = false;
+    const firebaseConfig = {
+        apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
+        authDomain: "earn-logic.firebaseapp.com",
+        projectId: "earn-logic",
+        storageBucket: "earn-logic.firebasestorage.app",
+        messagingSenderId: "254063437159",
+        appId: "1:254063437159:web:a8e118c33c924bd48c3bc2",
+        measurementId: "G-BK3796BFLR"
+    };
 
-    function tm() { document.getElementById('sb').classList.toggle('active'); }
-    function tai() { const b = document.getElementById('ai-box'); b.style.display = b.style.display==='flex'?'none':'flex'; }
-    function sw() { isl=!isl; document.getElementById('atitle').innerText=isl?"Login":"Create Account"; document.getElementById('regFields').style.display=isl?"none":"block"; }
-    function tp() { const p=document.getElementById('pass'); p.type=p.type==='password'?'text':'password'; }
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    async function auth() {
-        const e = document.getElementById('email').value;
-        const p = document.getElementById('pass').value;
-        if(isl) {
-            const {error} = await sb.auth.signInWithPassword({email:e, password:p});
-            if(error) alert(error.message); else location.reload();
-        } else {
-            const n = document.getElementById('regName').value;
-            const {data, error} = await sb.auth.signUp({email:e, password:p});
-            if(error) return alert(error.message);
-            await sb.from('profiles').insert([{id:data.user.id, username:n, coins:0}]);
-            alert("Success! Check Email.");
-        }
+    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
+    function toggleForm() {
+        const login = document.getElementById("login-form");
+        const signup = document.getElementById("signup-form");
+        login.style.display = login.style.display === "none" ? "block" : "none";
+        signup.style.display = signup.style.display === "none" ? "block" : "none";
     }
 
-    async function askAI() {
-        const i=document.getElementById('ait'); const m=document.getElementById('msgs');
-        const txt=i.value; i.value=""; m.innerHTML+=`<div><b>You:</b> ${txt}</div>`;
+    async function login() {
+        const e = document.getElementById('l-email').value;
+        const p = document.getElementById('l-pass').value;
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert(err.message); }
+    }
+
+    async function register() {
+        const e = document.getElementById('s-email').value;
+        const p = document.getElementById('s-pass').value;
+        const c = document.getElementById('s-country').value;
+        const r = document.getElementById('s-refer').value;
+        if(!c) return alert("Please select your country");
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBduk7N7im9_Lm2FqRCsyPdS6ZHL665wY4`, {
-                method:"POST", headers:{"Content-Type":"application/json"},
-                body: JSON.stringify({contents:[{parts:[{text:txt}]}]})
-            });
-            const d=await res.json();
-            m.innerHTML+=`<div style="color:var(--primary)"><b>AI:</b> ${d.candidates[0].content.parts[0].text}</div>`;
-        } catch(e) { m.innerHTML+=`<div>Error</div>`; }
+            const res = await auth.createUserWithEmailAndPassword(e, p);
+            await db.collection('users').doc(res.user.uid).set({ email:e, country:c, refer:r, coins:0 });
+        } catch(err) { alert(err.message); }
     }
 
-    window.onload = async () => {
-        const {data:{session}} = await sb.auth.getSession();
-        if(session) {
-            document.getElementById('authSection').style.display='none';
-            document.getElementById('dashboard').style.display='block';
-            const {data:p} = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-            if(p) { document.getElementById('bal').innerText=p.coins.toFixed(2); document.getElementById('uid').innerText="ID: #"+p.id.substring(0,5); }
-            const {data:t} = await sb.from('tasks').select('*');
-            if(t) {
-                let h=''; t.forEach(j => h+=`<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px;"><span>${j.title}</span><b>৳ ${j.reward}</b></div>`);
-                document.getElementById('jobs').innerHTML = h || 'No tasks found.';
-            }
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            document.getElementById('welcome-ui').style.display = 'none';
+            document.getElementById('dashboard-ui').style.display = 'block';
+            db.collection('users').doc(user.uid).onSnapshot(doc => {
+                const c = doc.data().coins || 0;
+                document.getElementById('coins').innerText = c;
+                document.getElementById('tk').innerText = (c * 0.1).toFixed(2);
+                document.getElementById('usd').innerText = (c / 1200).toFixed(2);
+            });
         }
-    }
+    });
+
+    function logout() { auth.signOut().then(() => location.reload()); }
 </script>
 </body>
-                                                       </html>
+</html>
