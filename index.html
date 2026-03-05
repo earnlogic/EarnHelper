@@ -3,185 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn Logic - Official Platform</title>
+    <title>Earn Logic - Full Verified Platform</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; --gold: #ffd700; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; padding-top: 70px; }
-
-        /* Navbar */
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 70px; }
+        
         .navbar { background: #111; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; }
         .logo { font-weight: bold; color: var(--primary); font-size: 22px; text-decoration: none; }
-        
-        /* Sidebar Menu */
-        .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; padding-top: 20px; }
+        #menu-trigger { display: none; cursor: pointer; font-size: 24px; color: var(--primary); }
+
+        .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
         .sidebar.active { left: 0; }
-        .sidebar-header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-        
-        /* Menu & Sub-menu Style */
-        .menu-btn { width: 100%; text-align: left; padding: 15px 25px; background: none; border: none; color: white; font-size: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1a1a; }
-        .dropdown-container { display: none; background: #151515; }
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+
+        .menu-btn { width: 100%; text-align: left; padding: 15px 25px; background: none; border: none; color: white; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; }
+        .dropdown-container { display: none; background: #151515; border-left: 3px solid var(--primary); }
         .dropdown-container a { display: block; padding: 12px 45px; color: #aaa; text-decoration: none; font-size: 13px; border-bottom: 1px solid #222; }
-        .fa-chevron-down { font-size: 10px; transition: 0.3s; }
 
-        /* Floating AI & Noti */
-        .ai-float { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px var(--primary); cursor: pointer; z-index: 2000; animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .noti-bar { background: #1a1a1a; padding: 10px; text-align: center; font-size: 12px; border-bottom: 1px solid #333; color: var(--primary); }
-
-        /* Auth Cards */
-        .auth-card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #222; max-width: 400px; margin: 30px auto; position: relative; }
+        .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
+        .card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; }
         .input-group { position: relative; margin-bottom: 15px; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
         .eye-icon { position: absolute; right: 15px; top: 14px; cursor: pointer; color: #555; }
         .btn-main { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        #dashboard, #verify-screen { display: none; padding: 20px; text-align: center; }
+        .bal-card { background: linear-gradient(135deg, #111, #222); padding: 30px; border-radius: 25px; border: 1px solid #333; margin-bottom: 20px; }
         
-        /* Footer */
-        .footer { background: #0d0d0d; padding: 40px 20px; text-align: center; border-top: 1px solid #222; margin-top: 50px; }
-        .footer a { color: #666; text-decoration: none; margin: 0 10px; font-size: 11px; }
+        .ai-float { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px var(--primary); cursor: pointer; z-index: 2000; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        .footer { background: #0d0d0d; padding: 30px; text-align: center; border-top: 1px solid #222; font-size: 11px; color: #555; margin-top: 50px; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div onclick="toggleSidebar()"><i class="fas fa-bars" style="font-size: 24px; color: var(--primary); cursor: pointer;"></i></div>
+        <div id="menu-trigger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
         <a href="#" class="logo">EARN LOGIC</a>
-        <select id="lang-switch" style="width: auto; padding: 5px; font-size: 11px; background: #222; border: none;">
-            <option>English</option>
-            <option>Bengali</option>
-        </select>
+        <div id="user-tag" style="font-size: 10px; color: #444;">ENG</div>
     </nav>
-
-    <div class="noti-bar">📢 1000 Coins = 100 BDT | 1200 Coins = 1 USD. No VPN Required.</div>
 
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <span style="color:var(--primary)">MAIN MENU</span>
-            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer"></i>
+            <span style="color:var(--primary); font-weight:bold;">EARN LOGIC MENU</span>
+            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; color:red;"></i>
         </div>
         
         <button class="menu-btn" onclick="location.reload()">1. Home</button>
 
         <button class="menu-btn sub-toggle">2. Dashboard <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">My Tasks</a>
-            <a href="#">Completed Tasks</a>
-            <a href="#">Pending Review</a>
-            <a href="#">Earnings</a>
-            <a href="#">Withdraw</a>
+            <a href="#">My Tasks</a><a href="#">Completed Tasks</a><a href="#">Pending Review</a><a href="#">Earnings</a><a href="#">Withdraw</a>
         </div>
 
         <button class="menu-btn sub-toggle">3. Find Jobs <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">All Jobs</a>
-            <a href="#">Micro Task</a>
-            <a href="#">Auto Task</a>
-            <a href="#">CPA</a>
-            <a href="#">Ads Earn</a>
-            <a href="#">High Paying Jobs</a>
+            <a href="#">All Jobs</a><a href="#">Micro Task</a><a href="#">Auto Task</a><a href="#">CPA</a><a href="#">Ads Earn</a><a href="#">High Paying Jobs</a>
         </div>
 
         <button class="menu-btn sub-toggle">4. Post a Job <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">Create New Campaign</a>
-            <a href="#">Manage My Jobs</a>
-            <a href="#">Review Submissions</a>
-            <a href="#">Pricing Plans</a>
+            <a href="#">Create New Campaign</a><a href="#">Manage My Jobs</a><a href="#">Review Submissions</a><a href="#">Pricing Plans</a>
         </div>
 
         <button class="menu-btn sub-toggle">5. Wallet <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">Deposit</a>
-            <a href="#">Withdraw (Payment Card)</a>
-            <a href="#">Transaction History</a>
-            <a href="#">Earnings Report</a>
+            <a href="#">Deposit</a><a href="#">Withdraw (Payment Card)</a><a href="#">Transaction History</a><a href="#">Earnings Report</a>
         </div>
 
         <button class="menu-btn sub-toggle">6. My Performance <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">Refer & Earn</a>
-            <a href="#">Team</a>
-            <a href="#">Rank-level</a>
+            <a href="#">Refer & Earn</a><a href="#">Team</a><a href="#">Rank-level</a>
         </div>
 
         <button class="menu-btn sub-toggle">7. Profile <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">My Profile</a>
-            <a href="#">Security & Password</a>
-            <a onclick="logout()" style="color:red">Logout</a>
+            <a href="#">My Profile</a><a href="#">Security & Password</a>
         </div>
 
         <button class="menu-btn sub-toggle">8. Leaderboard <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">Top Worker</a>
-            <a href="#">Top Referrer</a>
+            <a href="#">Top Worker</a><a href="#">Top Referrer</a>
         </div>
 
         <button class="menu-btn sub-toggle">9. Contact <i class="fas fa-chevron-down"></i></button>
         <div class="dropdown-container">
-            <a href="#">Support Form</a>
-            <a href="#">Telegram / Email</a>
+            <a href="#">Support Form</a><a href="#">Telegram / Email</a>
         </div>
 
         <button class="menu-btn">10. Live Chat</button>
+        <button class="menu-btn" onclick="logout()" style="color:red; margin-top:20px;">Logout</button>
     </div>
 
-    <div class="auth-card" id="signup-form">
-        <h2 style="text-align:center">Sign Up</h2>
-        <div class="input-group"><input type="text" id="s-user" placeholder="Username"></div>
-        <div class="input-group"><input type="email" id="s-email" placeholder="Email Address"></div>
-        <div class="input-group">
-            <input type="password" id="s-pass" placeholder="Password">
-            <i class="fas fa-eye eye-icon" onclick="togglePass('s-pass')"></i>
+    <div class="auth-container" id="auth-ui">
+        <div class="card" id="signup-form">
+            <h2>Register</h2>
+            <div class="input-group"><input type="text" id="s-user" placeholder="Username"></div>
+            <div class="input-group"><input type="email" id="s-email" placeholder="Email Address"></div>
+            <div class="input-group">
+                <input type="password" id="s-pass" placeholder="Password">
+                <i class="fas fa-eye eye-icon" onclick="togglePass('s-pass')"></i>
+            </div>
+            <select id="s-country" onchange="checkCountry(this.value)">
+                <option value="Bangladesh">Bangladesh</option><option value="India">India</option><option value="Other">Other Country...</option>
+            </select>
+            <div id="other-box" style="display:none; margin-top:10px;"><input type="text" id="s-other" placeholder="Write Country Name"></div>
+            <div class="input-group" style="margin-top:10px;"><input type="text" id="s-refer" placeholder="Refer Code (Optional)"></div>
+            <div style="font-size:11px; margin:10px 0;"><input type="checkbox" id="policy"> I agree to Terms & Conditions</div>
+            <button class="btn-main" onclick="register()">Create Account</button>
+            <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px; font-size:14px;">Already a member? Login</p>
         </div>
-        <select id="s-country" onchange="checkCountry(this.value)">
-            <option value="Bangladesh">Bangladesh</option>
-            <option value="India">India</option>
-            <option value="Other">Other Country...</option>
-        </select>
-        <div id="other-country-box" style="display:none; margin-top:10px;">
-            <input type="text" id="s-other" placeholder="Enter Country Name">
-        </div>
-        <div class="input-group" style="margin-top:10px;"><input type="text" id="s-refer" placeholder="Refer Code (Optional)"></div>
-        <div style="font-size:12px; color:#888; display:flex; align-items:center; gap:8px;">
-            <input type="checkbox" id="policy" style="width:auto"> I agree to Privacy Policy
-        </div>
-        <button class="btn-main" onclick="register()">Create Account</button>
-        <p onclick="toggleForm()" style="text-align:center; cursor:pointer; font-size:14px; color:#555">Already a member? Login</p>
-    </div>
 
-    <div class="auth-card" id="login-form" style="display:none">
-        <h2 style="text-align:center">Login</h2>
-        <div class="input-group"><input type="email" id="l-email" placeholder="Email"></div>
-        <div class="input-group">
-            <input type="password" id="l-pass" placeholder="Password">
-            <i class="fas fa-eye eye-icon" onclick="togglePass('l-pass')"></i>
-        </div>
-        <button class="btn-main" onclick="login()">Login</button>
-        <p style="font-size:12px; color:var(--primary); cursor:pointer; text-align:center; margin-top:10px">Forget Password?</p>
-        <p onclick="toggleForm()" style="text-align:center; cursor:pointer; font-size:14px; color:#555">New here? Sign Up</p>
-    </div>
-
-    <div id="dashboard" style="display:none; padding:20px; text-align:center;">
-        <div class="auth-card">
-            <p style="color:#888">Main Balance</p>
-            <h1 style="color:var(--primary)"><i class="fas fa-coins"></i> <span id="coin-bal">0</span></h1>
-            <div style="font-size:16px; color:var(--gold)">≈ ৳ <span id="tk-bal">0.00</span> | ≈ $ <span id="usd-bal">0.00</span></div>
+        <div class="card" id="login-form" style="display:none">
+            <h2>Login</h2>
+            <div class="input-group"><input type="email" id="l-email" placeholder="Email"></div>
+            <div class="input-group">
+                <input type="password" id="l-pass" placeholder="Password">
+                <i class="fas fa-eye eye-icon" onclick="togglePass('l-pass')"></i>
+            </div>
+            <button class="btn-main" onclick="login()">Sign In</button>
+            <p onclick="forgetPassword()" style="color:var(--primary); font-size:12px; margin-top:10px; cursor:pointer">Forget Password?</p>
+            <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px; font-size:14px;">New here? Sign Up</p>
         </div>
     </div>
 
-    <div class="ai-float" onclick="alert('How can I help you today?')"><i class="fas fa-robot" style="color:white; font-size:26px"></i></div>
+    <div id="verify-screen" class="auth-container">
+        <div class="card">
+            <i class="fas fa-paper-plane" style="font-size:40px; color:var(--primary)"></i>
+            <h3>Check Your Email</h3>
+            <p>আপনার ইমেইলে একটি ভেরিফিকেশন লিঙ্ক পাঠানো হয়েছে। দয়া করে লিঙ্কটিতে ক্লিক করে ভেরিফাই করুন এবং এই পেজটি রিফ্রেশ দিন।</p>
+            <button class="btn-main" onclick="location.reload()">Refresh After Verify</button>
+            <p onclick="logout()" style="color:red; cursor:pointer; margin-top:15px; font-size:12px;">Logout</p>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="bal-card">
+            <p style="color:#888; margin:0">Main Balance</p>
+            <h1 style="color:var(--primary); font-size:45px; margin:10px 0;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
+            <div style="color:var(--gold); font-size:18px;">≈ ৳ <span id="tk">0.00</span> | ≈ $ <span id="usd">0.00</span></div>
+        </div>
+        <p>Start your first task to earn money!</p>
+    </div>
+
+    <div class="ai-float" onclick="alert('Hello! I am your AI Assistant.')"><i class="fas fa-robot" style="font-size:26px; color:white"></i></div>
 
     <div class="footer">
-        <div class="footer-links">
-            <a href="#">About Us</a> | <a href="#">Terms & Conditions</a> | <a href="#">Privacy Policy</a> | <a href="#">Refund Policy</a>
-            <p style="margin-top:10px">Halal Task Guidelines Applied</p>
-        </div>
-        <p style="font-size:10px; color:#333; margin-top:20px">© 2026 Earn Logic - All Rights Reserved</p>
+        About Us | Terms & Conditions | Privacy Policy | Refund Policy | Halal Task Guidelines
+        <p>© 2026 Earn Logic - Trusted Freelancing Site</p>
     </div>
 
 <script>
@@ -193,65 +167,91 @@
         messagingSenderId: "254063437159",
         appId: "1:254063437159:web:a8e118c33c924bd48c3bc2"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // UI Logic
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
     function toggleForm() {
-        const login = document.getElementById("login-form");
-        const signup = document.getElementById("signup-form");
-        login.style.display = login.style.display === "none" ? "block" : "none";
-        signup.style.display = signup.style.display === "none" ? "block" : "none";
+        document.getElementById("login-form").style.display = document.getElementById("login-form").style.display === "none" ? "block" : "none";
+        document.getElementById("signup-form").style.display = document.getElementById("signup-form").style.display === "none" ? "block" : "none";
     }
     function togglePass(id) {
         const x = document.getElementById(id);
         x.type = x.type === "password" ? "text" : "password";
     }
-    function checkCountry(val) {
-        document.getElementById("other-country-box").style.display = val === "Other" ? "block" : "none";
-    }
+    function checkCountry(v) { document.getElementById("other-box").style.display = v === "Other" ? "block" : "none"; }
 
-    // Sub-menu Toggle
-    const toggles = document.getElementsByClassName("sub-toggle");
-    for (let i = 0; i < toggles.length; i++) {
-        toggles[i].addEventListener("click", function() {
+    const drops = document.getElementsByClassName("sub-toggle");
+    for (let i = 0; i < drops.length; i++) {
+        drops[i].addEventListener("click", function() {
             const container = this.nextElementSibling;
             container.style.display = container.style.display === "block" ? "none" : "block";
             this.querySelector(".fa-chevron-down").style.transform = container.style.display === "block" ? "rotate(180deg)" : "rotate(0deg)";
         });
     }
 
-    // Auth & Logic
     async function register() {
         const user = document.getElementById('s-user').value;
         const email = document.getElementById('s-email').value;
         const pass = document.getElementById('s-pass').value;
+        const country = document.getElementById('s-country').value === "Other" ? document.getElementById('s-other').value : document.getElementById('s-country').value;
         const policy = document.getElementById('policy').checked;
         if(!policy) return alert("Please accept the policy");
         try {
             const res = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.collection('users').doc(res.user.uid).set({ username: user, coins: 0 });
+            await res.user.sendEmailVerification();
+            await db.collection('users').doc(res.user.uid).set({ username: user, country: country, coins: 0 });
+            alert("ভেরিফিকেশন ইমেইল পাঠানো হয়েছে। দয়া করে চেক করুন।");
         } catch(e) { alert(e.message); }
     }
 
+    async function login() {
+        const email = document.getElementById('l-email').value;
+        const pass = document.getElementById('l-pass').value;
+        try { await auth.signInWithEmailAndPassword(email, pass); } catch(e) { alert(e.message); }
+    }
+
+    async function forgetPassword() {
+        const email = prompt("আপনার ইমেইলটি দিন:");
+        if(email) {
+            try { await auth.sendPasswordResetEmail(email); alert("রিসেট লিঙ্ক পাঠানো হয়েছে।"); } catch(e) { alert(e.message); }
+        }
+    }
+
     auth.onAuthStateChanged(user => {
+        const authUI = document.getElementById('auth-ui');
+        const verifyScreen = document.getElementById('verify-screen');
+        const dashboard = document.getElementById('dashboard');
+        const trigger = document.getElementById('menu-trigger');
+
         if(user) {
-            document.getElementById('signup-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            db.collection('users').doc(user.uid).onSnapshot(doc => {
-                const c = doc.data().coins || 0;
-                document.getElementById('coin-bal').innerText = c;
-                document.getElementById('tk-bal').innerText = (c * 0.1).toFixed(2);
-                document.getElementById('usd-bal').innerText = (c / 1200).toFixed(2);
-            });
+            if(user.emailVerified) {
+                authUI.style.display = 'none';
+                verifyScreen.style.display = 'none';
+                dashboard.style.display = 'block';
+                trigger.style.display = 'block';
+                db.collection('users').doc(user.uid).onSnapshot(doc => {
+                    const c = doc.data().coins || 0;
+                    document.getElementById('coins').innerText = c;
+                    document.getElementById('tk').innerText = (c * 0.1).toFixed(2);
+                    document.getElementById('usd').innerText = (c / 1200).toFixed(2);
+                });
+            } else {
+                authUI.style.display = 'none';
+                verifyScreen.style.display = 'block';
+                dashboard.style.display = 'none';
+                trigger.style.display = 'none';
+            }
+        } else {
+            authUI.style.display = 'block';
+            verifyScreen.style.display = 'none';
+            dashboard.style.display = 'none';
+            trigger.style.display = 'none';
         }
     });
 
     function logout() { auth.signOut().then(() => location.reload()); }
 </script>
 </body>
-    </html>
+</html>
