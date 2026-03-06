@@ -17,27 +17,17 @@
         .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
         .sidebar.active { left: 0; }
         .menu-btn { width: 100%; text-align: left; padding: 15px 25px; background: none; border: none; color: white; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; }
+        .dropdown-container { display: none; background: #151515; }
+        .dropdown-container a { display: block; padding: 12px 45px; color: #aaa; text-decoration: none; font-size: 13px; border-bottom: 1px solid #222; cursor: pointer; }
         .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
         .card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; margin-bottom: 20px; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; margin-bottom: 10px; }
         .btn-main { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-tg { background: var(--tg); color: white; padding: 12px; border-radius: 8px; text-decoration: none; display: inline-block; width: 100%; box-sizing: border-box; font-weight: bold; margin-top: 10px; }
         
-        #dashboard, #profile-page { display: none; padding: 20px; text-align: center; max-width: 800px; margin: 0 auto; animate: fadeIn 0.5s; }
-        .bal-card { background: linear-gradient(135deg, #111, #222); padding: 30px; border-radius: 25px; border: 1px solid #333; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,212,255,0.1); }
-        
-        .offer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .offer-card { background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; cursor: pointer; transition: 0.3s; }
-        .offer-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-
-        /* Legal Modal */
-        #legalModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; box-sizing:border-box; overflow-y:auto; }
-        .modal-box { max-width:500px; margin:40px auto; background:#1a1a1a; padding:30px; border-radius:15px; border:1px solid #333; position:relative; }
-
+        #dashboard, #profile-page { display: none; padding: 20px; text-align: center; max-width: 800px; margin: 0 auto; animation: fadeIn 0.5s; }
+        .bal-card { background: linear-gradient(135deg, #111, #222); padding: 30px; border-radius: 25px; border: 1px solid #333; margin-bottom: 20px; }
         .footer { background: #0d0d0d; padding: 40px 20px; text-align: center; border-top: 1px solid #222; font-size: 13px; color: #777; margin-top: 50px; }
         .footer a { color: var(--primary); text-decoration: none; margin: 0 10px; cursor: pointer; }
-        
-        .copy-box { background: #000; padding: 10px; border-radius: 5px; border: 1px dashed var(--primary); cursor: pointer; margin: 10px 0; word-break: break-all; font-size: 12px; }
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
     </style>
 </head>
@@ -58,18 +48,23 @@
             <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; color:red;"></i>
         </div>
         <button class="menu-btn" onclick="showPage('dashboard')">1. Dashboard</button>
-        <button class="menu-btn" onclick="showPage('profile-page')">2. Profile & Refer</button>
-        <button class="menu-btn" onclick="showNotice()">3. Find Jobs (Soon)</button>
-        <button class="menu-btn" onclick="window.open('https://t.me/YourBotLink')">4. Official Telegram</button>
-        <button class="menu-btn" onclick="logout()" style="color:red; margin-top:20px;">Logout</button>
-    </div>
-
-    <div id="legalModal">
-        <div class="modal-box">
-            <h2 id="modalTitle" style="color:var(--primary);"></h2>
-            <div id="modalContent" style="margin:20px 0; color:#bbb; text-align:left; font-size:14px;"></div>
-            <button class="btn-main" onclick="closeModal()">Close / বন্ধ করুন</button>
+        <button class="menu-btn" onclick="toggleDrop('drop-act')">2. My Activity <i class="fas fa-chevron-down"></i></button>
+        <div id="drop-act" class="dropdown-container">
+            <a onclick="showNotice()">Task History</a>
+            <a onclick="showNotice()">Pending</a>
         </div>
+        <button class="menu-btn" onclick="showNotice()">3. Find Jobs</button>
+        <button class="menu-btn" onclick="showNotice()">4. Post a Job</button>
+        <button class="menu-btn" onclick="toggleDrop('drop-wall')">5. Wallet <i class="fas fa-chevron-down"></i></button>
+        <div id="drop-wall" class="dropdown-container">
+            <a onclick="showWithdraw()">Withdraw</a>
+            <a onclick="showNotice()">Transactions</a>
+        </div>
+        <button class="menu-btn" onclick="showPage('profile-page')">6. Profile & Refer</button>
+        <button class="menu-btn" onclick="showNotice()">7. Leaderboard</button>
+        <button class="menu-btn" onclick="showNotice()">8. Performance</button>
+        <button class="menu-btn" onclick="window.open('https://t.me/YourBotLink')">9. Support (TG)</button>
+        <button class="menu-btn" onclick="logout()" style="color:red; margin-top:20px;">10. Logout</button>
     </div>
 
     <div class="auth-container" id="auth-ui">
@@ -78,47 +73,46 @@
             <input type="text" id="s-user" placeholder="Username">
             <input type="email" id="s-email" placeholder="Email Address">
             <input type="password" id="s-pass" placeholder="Password">
+            
+            <select id="s-country" onchange="checkOtherCountry(this.value)">
+                <option value="">Select Country</option>
+                <option value="Bangladesh">Bangladesh</option>
+                <option value="India">India</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="s-other-country" placeholder="Enter Country Name" style="display:none;">
+
             <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
             <button class="btn-main" onclick="register()">Register</button>
             <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px;">Login here</p>
         </div>
+
         <div class="card" id="login-form" style="display:none">
             <h2>Login</h2>
             <input type="email" id="l-email" placeholder="Email">
             <input type="password" id="l-pass" placeholder="Password">
             <button class="btn-main" onclick="login()">Sign In</button>
+            <p onclick="forgotPassword()" style="color:var(--primary); font-size:12px; cursor:pointer; margin-top:10px;">Forgot Password?</p>
             <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px;">New? Register</p>
         </div>
     </div>
 
     <div id="dashboard">
         <div class="bal-card">
-            <p style="color:#aaa;">Main Balance</p>
+            <p>Main Balance</p>
             <h1 style="color:var(--primary); font-size:45px;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
-            <div style="color:var(--gold);">≈ ৳ <span id="tk">0.00</span></div>
-            <div style="margin-top: 20px; display: flex; gap: 10px;">
-                <button onclick="showWithdraw()" class="btn-main" style="background: #222; border: 1px solid #444;">Withdraw</button>
-                <a href="https://t.me/YourBotLink" class="btn-tg" style="margin-top:0;">Telegram Bot</a>
-            </div>
-        </div>
-        <div class="offer-grid">
-            <div class="offer-card" onclick="showNotice()"><h4>TimeWall</h4><p>Pending</p></div>
-            <div class="offer-card" onclick="showNotice()"><h4>Offers4Wall</h4><p>Pending</p></div>
+            <button onclick="showWithdraw()" class="btn-main" style="width:auto; padding:10px 30px;">Withdraw</button>
         </div>
     </div>
 
     <div id="profile-page">
         <div class="card">
-            <i class="fas fa-user-circle" style="font-size:50px; color:var(--primary);"></i>
             <h2 id="p-username">User</h2>
             <p id="p-email" style="color:#777;">email@example.com</p>
-        </div>
-        <div class="card">
-            <h3>Refer & Earn</h3>
-            <p style="font-size:12px;">Share your link and get 10% bonus!</p>
-            <div class="copy-box" onclick="copyText('ref-link')">Link: <span id="ref-link">loading...</span></div>
-            <div class="copy-box" onclick="copyText('ref-code')">Code: <span id="ref-code">...</span></div>
-            <p style="font-size:10px; color:var(--gold);">Click to copy</p>
+            <div style="margin-top:20px;">
+                <p>Your Refer Code:</p>
+                <div class="btn-main" id="ref-code" onclick="copyText('ref-code')" style="background:#222; border:1px dashed var(--primary);">...</div>
+            </div>
         </div>
     </div>
 
@@ -130,7 +124,16 @@
         <p>© 2026 Earn Logic</p>
     </div>
 
+    <div id="legalModal" style="display:none;">
+        <div class="modal-box">
+            <h2 id="modalTitle" style="color:var(--primary);"></h2>
+            <div id="modalContent" style="color:#ccc; margin:20px 0; text-align:left;"></div>
+            <button class="btn-main" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
 <script>
+    // Firebase Config (Keep yours)
     const firebaseConfig = {
         apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
         authDomain: "earn-logic.firebaseapp.com",
@@ -143,69 +146,73 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    const legalData = {
-        about: { t: "About Us", bt: "আমাদের সম্পর্কে", c: "Earn Logic is a professional micro-task platform for easy earning.", bc: "আর্ন লজিক একটি পেশাদার মাইক্রো-টাস্ক প্ল্যাটফর্ম।" },
-        terms: { t: "Terms", bt: "শর্তাবলী", c: "1. No VPN. 2. One account only.", bc: "১. ভিপিএন নিষেধ। ২. একটির বেশি আইডি নিষেধ।" },
-        privacy: { t: "Privacy", bt: "গোপনীয়তা", c: "Your data is encrypted and safe with us.", bc: "আপনার তথ্য আমাদের কাছে নিরাপদ।" },
-        halal: { t: "Halal", bt: "হালাল নীতি", c: "No gambling or prohibited ads allowed.", bc: "জুয়া বা হারাম বিজ্ঞাপন মুক্ত প্ল্যাটফর্ম।" }
-    };
+    // Toggle Dropdown
+    function toggleDrop(id) {
+        const d = document.getElementById(id);
+        d.style.display = d.style.display === "block" ? "none" : "block";
+    }
 
+    // Check Other Country
+    function checkOtherCountry(val) {
+        document.getElementById('s-other-country').style.display = val === "Other" ? "block" : "none";
+    }
+
+    // Forgot Password
+    function forgotPassword() {
+        const email = document.getElementById('l-email').value;
+        if(!email) return alert("Please enter your email first!");
+        auth.sendPasswordResetEmail(email).then(() => alert("Reset link sent to your email!")).catch(e => alert(e.message));
+    }
+
+    // Functions for UI
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
     function toggleForm() {
         document.getElementById("login-form").style.display = document.getElementById("login-form").style.display === "none" ? "block" : "none";
         document.getElementById("signup-form").style.display = document.getElementById("signup-form").style.display === "none" ? "block" : "none";
     }
-
     function showPage(id) {
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('profile-page').style.display = 'none';
         document.getElementById(id).style.display = 'block';
-        toggleSidebar();
+        if(window.innerWidth < 1000) toggleSidebar();
     }
-
+    function showNotice() { alert("Update coming soon! Please use Telegram Bot."); }
+    function closeModal() { document.getElementById('legalModal').style.display = 'none'; }
     function showLegal(type) {
-        const lang = document.getElementById('lang-switch').value;
-        document.getElementById('modalTitle').innerText = lang === 'bn' ? legalData[type].bt : legalData[type].t;
-        document.getElementById('modalContent').innerText = lang === 'bn' ? legalData[type].bc : legalData[type].c;
+        const data = {
+            about: "Earn Logic is a micro-task platform.",
+            terms: "No VPN. One account only.",
+            privacy: "We keep your data safe.",
+            halal: "No gambling or prohibited ads."
+        };
+        document.getElementById('modalTitle').innerText = type.toUpperCase();
+        document.getElementById('modalContent').innerText = data[type];
         document.getElementById('legalModal').style.display = 'block';
     }
-    function closeModal() { document.getElementById('legalModal').style.display = 'none'; }
-    function showNotice() { alert("Update coming soon! Please use Telegram Bot for now."); }
 
-    function showWithdraw() {
-        const lang = document.getElementById('lang-switch').value;
-        const msg = lang === 'bn' ? "বটের মাধ্যমে উইথড্র করবেন?" : "Withdraw via Telegram Bot?";
-        if(confirm(msg)) window.location.href = "https://t.me/YourBotLink";
-    }
-
-    function copyText(id) {
-        const txt = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(txt).then(() => alert("Copied: " + txt));
-    }
-
+    // Auth Logic
     async function register() {
-        const user = document.getElementById('s-user').value;
-        const email = document.getElementById('s-email').value;
-        const pass = document.getElementById('s-pass').value;
-        const ref = document.getElementById('s-refer').value || "None";
-        if(!user || !email || !pass) return alert("Fill all!");
+        const u = document.getElementById('s-user').value;
+        const e = document.getElementById('s-email').value;
+        const p = document.getElementById('s-pass').value;
+        let c = document.getElementById('s-country').value;
+        if(c === "Other") c = document.getElementById('s-other-country').value;
+        
+        if(!u || !e || !p || !c) return alert("All fields required!");
         try {
-            const res = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.collection('users').doc(res.user.uid).set({ 
-                username: user, 
-                coins: 0, 
-                email: email,
-                referCode: res.user.uid.substring(0, 6).toUpperCase(),
-                referredBy: ref
+            const res = await auth.createUserWithEmailAndPassword(e, p);
+            await db.collection('users').doc(res.user.uid).set({
+                username: u, email: e, country: c, coins: 0,
+                referCode: res.user.uid.substring(0,6).toUpperCase()
             });
             alert("Success!");
-        } catch(e) { alert(e.message); }
+        } catch(err) { alert(err.message); }
     }
 
     async function login() {
-        const email = document.getElementById('l-email').value;
-        const pass = document.getElementById('l-pass').value;
-        try { await auth.signInWithEmailAndPassword(email, pass); } catch(e) { alert(e.message); }
+        const e = document.getElementById('l-email').value;
+        const p = document.getElementById('l-pass').value;
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert(err.message); }
     }
 
     auth.onAuthStateChanged(user => {
@@ -214,15 +221,11 @@
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('menu-trigger').style.display = 'block';
             db.collection('users').doc(user.uid).onSnapshot(doc => {
-                if(doc.exists) {
-                    const d = doc.data();
-                    document.getElementById('coins').innerText = d.coins || 0;
-                    document.getElementById('tk').innerText = ((d.coins || 0) * 0.1).toFixed(2);
-                    document.getElementById('p-username').innerText = d.username;
-                    document.getElementById('p-email').innerText = d.email;
-                    document.getElementById('ref-code').innerText = d.referCode;
-                    document.getElementById('ref-link').innerText = window.location.origin + "?ref=" + d.referCode;
-                }
+                const d = doc.data();
+                document.getElementById('coins').innerText = d.coins || 0;
+                document.getElementById('p-username').innerText = d.username;
+                document.getElementById('p-email').innerText = d.email;
+                document.getElementById('ref-code').innerText = d.referCode;
             });
         } else {
             document.getElementById('auth-ui').style.display = 'block';
@@ -234,4 +237,4 @@
     function logout() { auth.signOut().then(() => location.reload()); }
 </script>
 </body>
-                </html>
+    </html>
