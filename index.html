@@ -28,6 +28,7 @@
         .bal-card { background: linear-gradient(135deg, #111, #222); padding: 30px; border-radius: 25px; border: 1px solid #333; margin-bottom: 20px; }
         .footer { background: #0d0d0d; padding: 40px 20px; text-align: center; border-top: 1px solid #222; font-size: 13px; color: #777; margin-top: 50px; }
         .footer a { color: var(--primary); text-decoration: none; margin: 0 10px; cursor: pointer; }
+        .copy-box { background: #000; padding: 10px; border-radius: 5px; border: 1px dashed var(--primary); cursor: pointer; margin: 10px 0; word-break: break-all; font-size: 12px; color: var(--primary); }
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
     </style>
 </head>
@@ -51,7 +52,6 @@
         <button class="menu-btn" onclick="toggleDrop('drop-act')">2. My Activity <i class="fas fa-chevron-down"></i></button>
         <div id="drop-act" class="dropdown-container">
             <a onclick="showNotice()">Task History</a>
-            <a onclick="showNotice()">Pending</a>
         </div>
         <button class="menu-btn" onclick="showNotice()">3. Find Jobs</button>
         <button class="menu-btn" onclick="showNotice()">4. Post a Job</button>
@@ -73,15 +73,12 @@
             <input type="text" id="s-user" placeholder="Username">
             <input type="email" id="s-email" placeholder="Email Address">
             <input type="password" id="s-pass" placeholder="Password">
-            
             <select id="s-country" onchange="checkOtherCountry(this.value)">
-                <option value="">Select Country</option>
                 <option value="Bangladesh">Bangladesh</option>
                 <option value="India">India</option>
                 <option value="Other">Other</option>
             </select>
             <input type="text" id="s-other-country" placeholder="Enter Country Name" style="display:none;">
-
             <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
             <button class="btn-main" onclick="register()">Register</button>
             <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px;">Login here</p>
@@ -101,18 +98,33 @@
         <div class="bal-card">
             <p>Main Balance</p>
             <h1 style="color:var(--primary); font-size:45px;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
-            <button onclick="showWithdraw()" class="btn-main" style="width:auto; padding:10px 30px;">Withdraw</button>
+            <div style="color:var(--gold); margin-bottom:15px;">≈ ৳ <span id="tk">0.00</span></div>
+            <button onclick="showWithdraw()" class="btn-main" style="width:auto; padding:10px 30px;">Withdraw Now</button>
         </div>
     </div>
 
     <div id="profile-page">
         <div class="card">
-            <h2 id="p-username">User</h2>
-            <p id="p-email" style="color:#777;">email@example.com</p>
-            <div style="margin-top:20px;">
-                <p>Your Refer Code:</p>
-                <div class="btn-main" id="ref-code" onclick="copyText('ref-code')" style="background:#222; border:1px dashed var(--primary);">...</div>
-            </div>
+            <i class="fas fa-user-circle" style="font-size:60px; color:var(--primary); margin-bottom:10px;"></i>
+            <h2 id="p-username">Loading...</h2>
+            <p id="p-email" style="color:#777;">Loading...</p>
+        </div>
+        <div class="card">
+            <h3>Refer & Earn</h3>
+            <p style="font-size:12px; color:#aaa;">Invite friends and get 10% bonus!</p>
+            <p style="margin-top:15px; font-size:13px;">Your Refer Code:</p>
+            <div class="copy-box" id="ref-code" onclick="copyText('ref-code')">...</div>
+            <p style="margin-top:10px; font-size:13px;">Your Referral Link:</p>
+            <div class="copy-box" id="ref-link" onclick="copyText('ref-link')">...</div>
+            <p style="font-size:10px; color:var(--gold);">Click to copy</p>
+        </div>
+    </div>
+
+    <div id="legalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; box-sizing:border-box;">
+        <div style="max-width:500px; margin:40px auto; background:#1a1a1a; padding:30px; border-radius:15px; border:1px solid #333; text-align:center;">
+            <h2 id="modalTitle" style="color:var(--primary);"></h2>
+            <div id="modalContent" style="color:#ccc; margin:20px 0; text-align:left; font-size:14px;"></div>
+            <button class="btn-main" onclick="closeModal()">Close / বন্ধ করুন</button>
         </div>
     </div>
 
@@ -120,20 +132,11 @@
         <a onclick="showLegal('about')">About Us</a> | 
         <a onclick="showLegal('terms')">Terms</a> | 
         <a onclick="showLegal('privacy')">Privacy</a> | 
-        <a onclick="showLegal('halal')">Halal Guidelines</a>
+        <a onclick="showLegal('halal')">Halal</a>
         <p>© 2026 Earn Logic</p>
     </div>
 
-    <div id="legalModal" style="display:none;">
-        <div class="modal-box">
-            <h2 id="modalTitle" style="color:var(--primary);"></h2>
-            <div id="modalContent" style="color:#ccc; margin:20px 0; text-align:left;"></div>
-            <button class="btn-main" onclick="closeModal()">Close</button>
-        </div>
-    </div>
-
 <script>
-    // Firebase Config (Keep yours)
     const firebaseConfig = {
         apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
         authDomain: "earn-logic.firebaseapp.com",
@@ -146,26 +149,15 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Toggle Dropdown
+    // Utility Functions
+    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
     function toggleDrop(id) {
         const d = document.getElementById(id);
         d.style.display = d.style.display === "block" ? "none" : "block";
     }
-
-    // Check Other Country
     function checkOtherCountry(val) {
         document.getElementById('s-other-country').style.display = val === "Other" ? "block" : "none";
     }
-
-    // Forgot Password
-    function forgotPassword() {
-        const email = document.getElementById('l-email').value;
-        if(!email) return alert("Please enter your email first!");
-        auth.sendPasswordResetEmail(email).then(() => alert("Reset link sent to your email!")).catch(e => alert(e.message));
-    }
-
-    // Functions for UI
-    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
     function toggleForm() {
         document.getElementById("login-form").style.display = document.getElementById("login-form").style.display === "none" ? "block" : "none";
         document.getElementById("signup-form").style.display = document.getElementById("signup-form").style.display === "none" ? "block" : "none";
@@ -176,36 +168,60 @@
         document.getElementById(id).style.display = 'block';
         if(window.innerWidth < 1000) toggleSidebar();
     }
+
+    // Withdraw System (FIXED)
+    function showWithdraw() {
+        const lang = document.getElementById('lang-switch').value;
+        const msg = lang === 'bn' ? 
+            "ওয়েবসাইট উইথড্র সিস্টেম বর্তমানে আপগ্রেড করা হচ্ছে। আপনি কি আমাদের অফিশিয়াল টেলিগ্রাম বটের মাধ্যমে পেমেন্ট রিকোয়েস্ট দিতে চান?" : 
+            "Website withdrawal is under maintenance. Do you want to request payment via our Official Telegram Bot?";
+        if(confirm(msg)) window.location.href = "https://t.me/YourBotLink";
+    }
+
+    function copyText(id) {
+        const txt = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(txt).then(() => alert("Copied: " + txt));
+    }
+
     function showNotice() { alert("Update coming soon! Please use Telegram Bot."); }
     function closeModal() { document.getElementById('legalModal').style.display = 'none'; }
     function showLegal(type) {
+        const lang = document.getElementById('lang-switch').value;
         const data = {
-            about: "Earn Logic is a micro-task platform.",
-            terms: "No VPN. One account only.",
-            privacy: "We keep your data safe.",
-            halal: "No gambling or prohibited ads."
+            about: { en: "Earn Logic is a professional micro-task platform.", bn: "আর্ন লজিক একটি পেশাদার মাইক্রো-টাস্ক প্ল্যাটফর্ম।" },
+            terms: { en: "1. No VPN. 2. Multiple accounts forbidden.", bn: "১. ভিপিএন নিষেধ। ২. মাল্টিপল অ্যাকাউন্ট নিষেধ।" },
+            privacy: { en: "Your data is encrypted and secure.", bn: "আপনার তথ্য আমাদের কাছে সুরক্ষিত।" },
+            halal: { en: "We strictly follow halal earning policies.", bn: "আমরা কঠোরভাবে হালাল উপার্জন নীতি অনুসরণ করি।" }
         };
         document.getElementById('modalTitle').innerText = type.toUpperCase();
-        document.getElementById('modalContent').innerText = data[type];
+        document.getElementById('modalContent').innerText = lang === 'bn' ? data[type].bn : data[type].en;
         document.getElementById('legalModal').style.display = 'block';
     }
 
-    // Auth Logic
+    function forgotPassword() {
+        const email = document.getElementById('l-email').value;
+        if(!email) return alert("Please enter email first!");
+        auth.sendPasswordResetEmail(email).then(() => alert("Reset link sent!")).catch(e => alert(e.message));
+    }
+
+    // Auth & Profile Data Sync (FIXED)
     async function register() {
         const u = document.getElementById('s-user').value;
         const e = document.getElementById('s-email').value;
         const p = document.getElementById('s-pass').value;
         let c = document.getElementById('s-country').value;
         if(c === "Other") c = document.getElementById('s-other-country').value;
-        
-        if(!u || !e || !p || !c) return alert("All fields required!");
+        const refBy = document.getElementById('s-refer').value || "None";
+
+        if(!u || !e || !p || !c) return alert("Please fill all fields!");
         try {
             const res = await auth.createUserWithEmailAndPassword(e, p);
+            const myRefCode = res.user.uid.substring(0, 6).toUpperCase();
             await db.collection('users').doc(res.user.uid).set({
                 username: u, email: e, country: c, coins: 0,
-                referCode: res.user.uid.substring(0,6).toUpperCase()
+                referCode: myRefCode, referredBy: refBy
             });
-            alert("Success!");
+            alert("Registration Successful!");
         } catch(err) { alert(err.message); }
     }
 
@@ -220,16 +236,25 @@
             document.getElementById('auth-ui').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('menu-trigger').style.display = 'block';
+            
             db.collection('users').doc(user.uid).onSnapshot(doc => {
-                const d = doc.data();
-                document.getElementById('coins').innerText = d.coins || 0;
-                document.getElementById('p-username').innerText = d.username;
-                document.getElementById('p-email').innerText = d.email;
-                document.getElementById('ref-code').innerText = d.referCode;
+                if(doc.exists) {
+                    const d = doc.data();
+                    // Dashboard Update
+                    document.getElementById('coins').innerText = d.coins || 0;
+                    document.getElementById('tk').innerText = ((d.coins || 0) * 0.1).toFixed(2);
+                    
+                    // Profile Page Update
+                    document.getElementById('p-username').innerText = d.username || "User";
+                    document.getElementById('p-email').innerText = d.email || "";
+                    document.getElementById('ref-code').innerText = d.referCode || "...";
+                    document.getElementById('ref-link').innerText = window.location.origin + "?ref=" + (d.referCode || "");
+                }
             });
         } else {
             document.getElementById('auth-ui').style.display = 'block';
             document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('profile-page').style.display = 'none';
             document.getElementById('menu-trigger').style.display = 'none';
         }
     });
@@ -237,4 +262,4 @@
     function logout() { auth.signOut().then(() => location.reload()); }
 </script>
 </body>
-    </html>
+                                                                         </html>
