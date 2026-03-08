@@ -10,15 +10,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* ২. ডিজাইন (CSS) */
         :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 75px; padding-bottom: 80px; }
         
-        /* Navbar */
+        /* নেভিগেশন বার */
         .navbar { background: #111; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; }
         .logo { font-weight: bold; color: var(--primary); font-size: 20px; text-decoration: none; }
         .menu-trigger { cursor: pointer; font-size: 22px; color: var(--primary); display: none; }
 
-        /* Sidebar Menu */
+        /* সাইডবার (১০টি মেনু) */
         .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #0d0d0d; transition: 0.3s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
         .sidebar.active { left: 0; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
@@ -26,13 +27,13 @@
         .dropdown { display: none; background: #151515; }
         .dropdown a { display: block; padding: 10px 40px; color: #888; text-decoration: none; font-size: 13px; border-bottom: 1px solid #222; }
 
-        /* Auth UI */
+        /* লগইন ও রেজিস্ট্রেশন কার্ড */
         .auth-container { max-width: 400px; margin: 30px auto; padding: 15px; }
         .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; text-align: center; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; margin-bottom: 15px; box-sizing: border-box; }
         .btn-main { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
-        /* Pages */
+        /* পেজ এবং বটম নেভিগেশন */
         #dashboard, #profile-page, #legal-page { display: none; padding: 20px; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0d0d0d; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 9999; }
         .nav-item { text-align: center; flex: 1; cursor: pointer; color: #666; font-size: 11px; }
@@ -85,24 +86,24 @@
             </select>
             <input type="text" id="other-c" placeholder="Enter Country Name" style="display:none;">
             <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
-            <button class="btn-main" onclick="register()">Register</button>
+            <button class="btn-main" onclick="registerUser()">Register</button>
             <p onclick="toggleAuth()" style="cursor:pointer; color:#888; margin-top:15px;">Already have an account? Login</p>
         </div>
         <div class="card" id="login-form" style="display:none">
             <h2>Login</h2>
             <input type="email" id="l-email" placeholder="Email">
             <input type="password" id="l-pass" placeholder="Password">
-            <button class="btn-main" onclick="login()">Sign In</button>
+            <button class="btn-main" onclick="loginUser()">Sign In</button>
             <p onclick="resetPass()" style="color:var(--primary); font-size:12px; cursor:pointer; margin-top:10px;">Forgot Password?</p>
-            <p onclick="toggleAuth()" style="cursor:pointer; color:#888; margin-top:15px;">New here? Sign Up</p>
+            <p onclick="toggleAuth()" style="cursor:pointer; color:#888; margin-top:15px;">New? Sign Up</p>
         </div>
     </div>
 
     <div id="dashboard">
-        <div class="card" style="margin-bottom:20px;">
-            <p style="color:#888; margin:0;">Main Balance</p>
-            <h1 style="color:var(--primary); font-size:40px; margin:10px 0;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
-            <button onclick="window.location.href='https://t.me/earnlogic_official_bot'" class="btn-main" style="width:auto; padding:10px 25px;">Withdraw Now</button>
+        <div class="card">
+            <p style="color:#888;">Main Balance</p>
+            <h1 style="color:var(--primary); font-size:40px;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
+            <button onclick="window.location.href='https://t.me/earnlogic_official_bot'" class="btn-main">Withdraw</button>
         </div>
     </div>
 
@@ -118,7 +119,7 @@
         <div class="card">
             <h3 id="p-username">...</h3>
             <p id="p-email" style="font-size:12px; color:#666;"></p>
-            <div style="background:#000; padding:10px; border:1px dashed var(--primary); color:var(--primary); font-weight:bold; margin-top:15px;" id="ref-code">...</div>
+            <div id="ref-code" style="background:#000; padding:10px; border:1px dashed var(--primary); color:var(--primary); margin-top:15px;">...</div>
         </div>
     </div>
 
@@ -131,6 +132,7 @@
     </div>
 
     <script>
+        // ৬. ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
             authDomain: "earn-logic.firebaseapp.com",
@@ -143,6 +145,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // ইন্টারফেস কন্ট্রোল
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         function toggleDrop(id) { 
             const d = document.getElementById(id); 
@@ -154,51 +157,62 @@
             l.style.display = l.style.display==='none'?'block':'none';
             s.style.display = s.style.display==='none'?'block':'none';
         }
-
         function showPage(id) {
             ['dashboard','profile-page','legal-page'].forEach(p => document.getElementById(p).style.display='none');
             document.getElementById(id).style.display = 'block';
             if(document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
         }
 
+        // লিগ্যাল তথ্য
         function showLegal(type) {
             const data = {
                 about: { t: "About Us", c: "Earn Logic is a premium micro-task platform." },
-                policy: { t: "Privacy Policy", c: "We protect your data and privacy." },
-                halal: { t: "Halal Guidelines", c: "All tasks are 100% Halal and ethical." }
+                policy: { t: "Privacy Policy", c: "Your privacy and data are safe with us." },
+                halal: { t: "Halal Guidelines", c: "We ensure 100% Halal earning methods." }
             };
             document.getElementById('l-title').innerText = data[type].t;
             document.getElementById('l-content').innerText = data[type].c;
             showPage('legal-page');
         }
 
-        // --- Auth Functions ---
-        async function register() {
+        // --- ৭. মেইন ফাংশনসমূহ (লগইন ও রেজিস্ট্রেশন) ---
+
+        // রেজিস্ট্রেশন
+        async function registerUser() {
             const u = document.getElementById('s-user').value;
             const e = document.getElementById('s-email').value;
             const p = document.getElementById('s-pass').value;
-            if(!u || !e || !p) return alert("Fill all fields!");
+            if(!u || !e || !p) { alert("সবগুলো ঘর পূরণ করুন!"); return; }
+            
             try {
                 const res = await auth.createUserWithEmailAndPassword(e, p);
                 await db.collection('users').doc(res.user.uid).set({
                     username: u, email: e, coins: 0, referCode: res.user.uid.substring(0,6).toUpperCase()
                 });
-                alert("Account Created!");
-            } catch(err) { alert(err.message); }
+                alert("রেজিস্ট্রেশন সফল হয়েছে!");
+            } catch(err) { alert("ভুল: " + err.message); }
         }
 
-        async function login() {
+        // লগইন (এটিই আপনার সমস্যা ছিল, এখন ঠিক করা হয়েছে)
+        async function loginUser() {
             const e = document.getElementById('l-email').value;
             const p = document.getElementById('l-pass').value;
-            try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert(err.message); }
+            if(!e || !p) { alert("ইমেইল এবং পাসওয়ার্ড দিন!"); return; }
+
+            try {
+                await auth.signInWithEmailAndPassword(e, p);
+                alert("লগইন সফল!");
+            } catch(err) { alert("লগইন ব্যর্থ: " + err.message); }
         }
 
+        // পাসওয়ার্ড রিসেট
         function resetPass() {
             const e = document.getElementById('l-email').value;
-            if(!e) return alert("Enter email first!");
-            auth.sendPasswordResetEmail(e).then(() => alert("Reset link sent!")).catch(e => alert(e.message));
+            if(!e) { alert("আগে ইমেইলটি লিখুন!"); return; }
+            auth.sendPasswordResetEmail(e).then(() => alert("রিসেট লিঙ্ক ইমেইলে পাঠানো হয়েছে।")).catch(err => alert(err.message));
         }
 
+        // অটো লগইন চেক
         auth.onAuthStateChanged(user => {
             const nav = document.getElementById('bot-nav');
             const m = document.getElementById('m-trig');
@@ -213,17 +227,18 @@
                         document.getElementById('coins').innerText = d.coins || 0;
                         document.getElementById('p-username').innerText = d.username;
                         document.getElementById('p-email').innerText = d.email;
-                        document.getElementById('ref-code').innerText = "REFER: " + d.referCode;
+                        document.getElementById('ref-code').innerText = "REFER CODE: " + d.referCode;
                     }
                 });
             } else {
                 document.getElementById('auth-ui').style.display = 'block';
                 nav.style.display = 'none';
                 m.style.display = 'none';
+                document.getElementById('dashboard').style.display = 'none';
             }
         });
 
         function logout() { auth.signOut().then(() => location.reload()); }
     </script>
 </body>
-    </html>
+</html>
