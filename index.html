@@ -10,15 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; --gold: #ffd700; --tg: #0088cc; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 70px; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 70px; padding-bottom: 80px; }
         .navbar { background: #111; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; }
         .logo { font-weight: bold; color: var(--primary); font-size: 22px; text-decoration: none; }
         #menu-trigger { display: none; cursor: pointer; font-size: 24px; color: var(--primary); }
         .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
         .sidebar.active { left: 0; }
         .menu-btn { width: 100%; text-align: left; padding: 15px 25px; background: none; border: none; color: white; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; }
-        .dropdown-container { display: none; background: #151515; }
-        .dropdown-container a { display: block; padding: 12px 45px; color: #aaa; text-decoration: none; font-size: 13px; border-bottom: 1px solid #222; cursor: pointer; }
         .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
         .card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; margin-bottom: 20px; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; margin-bottom: 10px; }
@@ -26,9 +24,11 @@
         
         #dashboard, #profile-page { display: none; padding: 20px; text-align: center; max-width: 800px; margin: 0 auto; animation: fadeIn 0.5s; }
         .bal-card { background: linear-gradient(135deg, #111, #222); padding: 30px; border-radius: 25px; border: 1px solid #333; margin-bottom: 20px; }
-        .footer { background: #0d0d0d; padding: 40px 20px; text-align: center; border-top: 1px solid #222; font-size: 13px; color: #777; margin-top: 50px; }
-        .footer a { color: var(--primary); text-decoration: none; margin: 0 10px; cursor: pointer; }
-        .copy-box { background: #000; padding: 10px; border-radius: 5px; border: 1px dashed var(--primary); cursor: pointer; margin: 10px 0; word-break: break-all; font-size: 12px; color: var(--primary); }
+        .tg-card { background: linear-gradient(135deg, #0088cc, #00d4ff); margin-top: 20px; padding: 20px; border-radius: 15px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: none; justify-content: space-around; align-items: center; padding: 10px 0; border-top: 1px solid #222; z-index: 9999; }
+        .nav-item { text-align: center; flex: 1; cursor: pointer; color: #888; font-size: 10px; }
+        .nav-item i { font-size: 18px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); }
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
     </style>
 </head>
@@ -48,23 +48,11 @@
             <span style="color:var(--primary); font-weight:bold;">MENU</span>
             <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; color:red;"></i>
         </div>
-        <button class="menu-btn" onclick="showPage('dashboard')">1. Dashboard</button>
-        <button class="menu-btn" onclick="toggleDrop('drop-act')">2. My Activity <i class="fas fa-chevron-down"></i></button>
-        <div id="drop-act" class="dropdown-container">
-            <a onclick="showNotice()">Task History</a>
-        </div>
-        <button class="menu-btn" onclick="showNotice()">3. Find Jobs</button>
-        <button class="menu-btn" onclick="showNotice()">4. Post a Job</button>
-        <button class="menu-btn" onclick="toggleDrop('drop-wall')">5. Wallet <i class="fas fa-chevron-down"></i></button>
-        <div id="drop-wall" class="dropdown-container">
-            <a onclick="showWithdraw()">Withdraw</a>
-            <a onclick="showNotice()">Transactions</a>
-        </div>
-        <button class="menu-btn" onclick="showPage('profile-page')">6. Profile & Refer</button>
-        <button class="menu-btn" onclick="showNotice()">7. Leaderboard</button>
-        <button class="menu-btn" onclick="showNotice()">8. Performance</button>
-        <button class="menu-btn" onclick="window.open('https://t.me/YourBotLink')">9. Support (TG)</button>
-        <button class="menu-btn" onclick="logout()" style="color:red; margin-top:20px;">10. Logout</button>
+        <button class="menu-btn" onclick="showPage('dashboard')">Dashboard</button>
+        <button class="menu-btn" onclick="showWithdraw()">Withdraw</button>
+        <button class="menu-btn" onclick="showPage('profile-page')">Profile & Refer</button>
+        <button class="menu-btn" onclick="window.open('https://t.me/earnlogic_official_bot')">Support (TG)</button>
+        <button class="menu-btn" onclick="logout()" style="color:red;">Logout</button>
     </div>
 
     <div class="auth-container" id="auth-ui">
@@ -73,12 +61,10 @@
             <input type="text" id="s-user" placeholder="Username">
             <input type="email" id="s-email" placeholder="Email Address">
             <input type="password" id="s-pass" placeholder="Password">
-            <select id="s-country" onchange="checkOtherCountry(this.value)">
+            <select id="s-country">
                 <option value="Bangladesh">Bangladesh</option>
                 <option value="India">India</option>
-                <option value="Other">Other</option>
             </select>
-            <input type="text" id="s-other-country" placeholder="Enter Country Name" style="display:none;">
             <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
             <button class="btn-main" onclick="register()">Register</button>
             <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px;">Login here</p>
@@ -89,7 +75,6 @@
             <input type="email" id="l-email" placeholder="Email">
             <input type="password" id="l-pass" placeholder="Password">
             <button class="btn-main" onclick="login()">Sign In</button>
-            <p onclick="forgotPassword()" style="color:var(--primary); font-size:12px; cursor:pointer; margin-top:10px;">Forgot Password?</p>
             <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px;">New? Register</p>
         </div>
     </div>
@@ -101,6 +86,14 @@
             <div style="color:var(--gold); margin-bottom:15px;">≈ ৳ <span id="tk">0.00</span></div>
             <button onclick="showWithdraw()" class="btn-main" style="width:auto; padding:10px 30px;">Withdraw Now</button>
         </div>
+
+        <div class="tg-card" onclick="window.location.href='https://t.me/earnlogic_official_bot'">
+            <div style="text-align: left;">
+                <h3 style="margin: 0; font-size: 16px;">Earning via Telegram</h3>
+                <p style="margin: 5px 0 0; font-size: 11px; opacity: 0.9;">Join our official bot for daily rewards!</p>
+            </div>
+            <i class="fab fa-telegram-plane" style="font-size: 25px;"></i>
+        </div>
     </div>
 
     <div id="profile-page">
@@ -111,31 +104,27 @@
         </div>
         <div class="card">
             <h3>Refer & Earn</h3>
-            <p style="font-size:12px; color:#aaa;">Invite friends and get 10% bonus!</p>
-            <p style="margin-top:15px; font-size:13px;">Your Refer Code:</p>
             <div class="copy-box" id="ref-code" onclick="copyText('ref-code')">...</div>
-            <p style="margin-top:10px; font-size:13px;">Your Referral Link:</p>
-            <div class="copy-box" id="ref-link" onclick="copyText('ref-link')">...</div>
-            <p style="font-size:10px; color:var(--gold);">Click to copy</p>
+            <p style="font-size:10px; color:var(--gold);">Click to copy code</p>
         </div>
     </div>
 
-    <div id="legalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; box-sizing:border-box;">
-        <div style="max-width:500px; margin:40px auto; background:#1a1a1a; padding:30px; border-radius:15px; border:1px solid #333; text-align:center;">
-            <h2 id="modalTitle" style="color:var(--primary);"></h2>
-            <div id="modalContent" style="color:#ccc; margin:20px 0; text-align:left; font-size:14px;"></div>
-            <button class="btn-main" onclick="closeModal()">Close / বন্ধ করুন</button>
+    <div class="bottom-nav" id="bot-nav">
+        <div class="nav-item active" onclick="showPage('dashboard')">
+            <i class="fas fa-tasks"></i><div>Tasks</div>
+        </div>
+        <div class="nav-item" onclick="showWithdraw()">
+            <i class="fas fa-wallet"></i><div>Withdraw</div>
+        </div>
+        <div class="nav-item" onclick="showPage('profile-page')">
+            <i class="fas fa-user-friends"></i><div>Refer</div>
+        </div>
+        <div class="nav-item" onclick="window.open('https://t.me/earnlogicoffical')">
+            <i class="fas fa-bullhorn"></i><div>Channel</div>
         </div>
     </div>
 
-    <div class="footer">
-        <a onclick="showLegal('about')">About Us</a> | 
-        <a onclick="showLegal('terms')">Terms</a> | 
-        <a onclick="showLegal('privacy')">Privacy</a> | 
-        <a onclick="showLegal('halal')">Halal</a>
-        <p>© 2026 Earn Logic</p>
-    </div>
-
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
@@ -148,34 +137,28 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
 
-    // Utility Functions
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
-    function toggleDrop(id) {
-        const d = document.getElementById(id);
-        d.style.display = d.style.display === "block" ? "none" : "block";
-    }
-    function checkOtherCountry(val) {
-        document.getElementById('s-other-country').style.display = val === "Other" ? "block" : "none";
-    }
     function toggleForm() {
         document.getElementById("login-form").style.display = document.getElementById("login-form").style.display === "none" ? "block" : "none";
         document.getElementById("signup-form").style.display = document.getElementById("signup-form").style.display === "none" ? "block" : "none";
     }
+    
     function showPage(id) {
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('profile-page').style.display = 'none';
         document.getElementById(id).style.display = 'block';
-        if(window.innerWidth < 1000) toggleSidebar();
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        if(window.innerWidth < 1000 && document.getElementById("sidebar").classList.contains("active")) toggleSidebar();
     }
 
-    // Withdraw System (FIXED)
     function showWithdraw() {
-        const lang = document.getElementById('lang-switch').value;
-        const msg = lang === 'bn' ? 
-            "ওয়েবসাইট উইথড্র সিস্টেম বর্তমানে আপগ্রেড করা হচ্ছে। আপনি কি আমাদের অফিশিয়াল টেলিগ্রাম বটের মাধ্যমে পেমেন্ট রিকোয়েস্ট দিতে চান?" : 
-            "Website withdrawal is under maintenance. Do you want to request payment via our Official Telegram Bot?";
-        if(confirm(msg)) window.location.href = "https://t.me/YourBotLink";
+        if(confirm("Withdrawal via Bot is safer. Redirect to @earnlogic_official_bot?")) {
+            window.location.href = "https://t.me/earnlogic_official_bot";
+        }
     }
 
     function copyText(id) {
@@ -183,45 +166,18 @@
         navigator.clipboard.writeText(txt).then(() => alert("Copied: " + txt));
     }
 
-    function showNotice() { alert("Update coming soon! Please use Telegram Bot."); }
-    function closeModal() { document.getElementById('legalModal').style.display = 'none'; }
-    function showLegal(type) {
-        const lang = document.getElementById('lang-switch').value;
-        const data = {
-            about: { en: "Earn Logic is a professional micro-task platform.", bn: "আর্ন লজিক একটি পেশাদার মাইক্রো-টাস্ক প্ল্যাটফর্ম।" },
-            terms: { en: "1. No VPN. 2. Multiple accounts forbidden.", bn: "১. ভিপিএন নিষেধ। ২. মাল্টিপল অ্যাকাউন্ট নিষেধ।" },
-            privacy: { en: "Your data is encrypted and secure.", bn: "আপনার তথ্য আমাদের কাছে সুরক্ষিত।" },
-            halal: { en: "We strictly follow halal earning policies.", bn: "আমরা কঠোরভাবে হালাল উপার্জন নীতি অনুসরণ করি।" }
-        };
-        document.getElementById('modalTitle').innerText = type.toUpperCase();
-        document.getElementById('modalContent').innerText = lang === 'bn' ? data[type].bn : data[type].en;
-        document.getElementById('legalModal').style.display = 'block';
-    }
-
-    function forgotPassword() {
-        const email = document.getElementById('l-email').value;
-        if(!email) return alert("Please enter email first!");
-        auth.sendPasswordResetEmail(email).then(() => alert("Reset link sent!")).catch(e => alert(e.message));
-    }
-
-    // Auth & Profile Data Sync (FIXED)
     async function register() {
         const u = document.getElementById('s-user').value;
         const e = document.getElementById('s-email').value;
         const p = document.getElementById('s-pass').value;
-        let c = document.getElementById('s-country').value;
-        if(c === "Other") c = document.getElementById('s-other-country').value;
-        const refBy = document.getElementById('s-refer').value || "None";
-
-        if(!u || !e || !p || !c) return alert("Please fill all fields!");
+        const c = document.getElementById('s-country').value;
+        if(!u || !e || !p) return alert("Fill all fields!");
         try {
             const res = await auth.createUserWithEmailAndPassword(e, p);
-            const myRefCode = res.user.uid.substring(0, 6).toUpperCase();
             await db.collection('users').doc(res.user.uid).set({
-                username: u, email: e, country: c, coins: 0,
-                referCode: myRefCode, referredBy: refBy
+                username: u, email: e, country: c, coins: 0, referCode: res.user.uid.substring(0,6).toUpperCase()
             });
-            alert("Registration Successful!");
+            alert("Registered!");
         } catch(err) { alert(err.message); }
     }
 
@@ -232,23 +188,21 @@
     }
 
     auth.onAuthStateChanged(user => {
+        const nav = document.getElementById('bot-nav');
         if(user) {
             document.getElementById('auth-ui').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('menu-trigger').style.display = 'block';
+            nav.style.display = 'flex';
             
             db.collection('users').doc(user.uid).onSnapshot(doc => {
                 if(doc.exists) {
                     const d = doc.data();
-                    // Dashboard Update
                     document.getElementById('coins').innerText = d.coins || 0;
                     document.getElementById('tk').innerText = ((d.coins || 0) * 0.1).toFixed(2);
-                    
-                    // Profile Page Update
                     document.getElementById('p-username').innerText = d.username || "User";
                     document.getElementById('p-email').innerText = d.email || "";
                     document.getElementById('ref-code').innerText = d.referCode || "...";
-                    document.getElementById('ref-link').innerText = window.location.origin + "?ref=" + (d.referCode || "");
                 }
             });
         } else {
@@ -256,37 +210,12 @@
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('profile-page').style.display = 'none';
             document.getElementById('menu-trigger').style.display = 'none';
+            nav.style.display = 'none';
         }
     });
 
     function logout() { auth.signOut().then(() => location.reload()); }
 </script>
-    <div style="position:fixed; bottom:0; left:0; width:100%; background:#fff; display:flex; justify-content:space-around; align-items:center; padding:10px 0; border-top:1px solid #eee; z-index:9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
-    <div onclick="showPage('dashboard')" style="text-align:center; flex:1; cursor:pointer;">
-        <i class="fas fa-check-square" style="font-size:18px; color:#4caf50;"></i>
-        <div style="font-size:10px; color:#4caf50; margin-top:4px;">Tasks</div>
-    </div>
-    <div onclick="showWithdraw()" style="text-align:center; flex:1; cursor:pointer;">
-        <i class="fas fa-wallet" style="font-size:18px; color:#888;"></i>
-        <div style="font-size:10px; color:#888; margin-top:4px;">Withdraw</div>
-    </div>
-    <div onclick="showNotice()" style="text-align:center; flex:1; cursor:pointer;">
-        <i class="fas fa-history" style="font-size:18px; color:#888;"></i>
-        <div style="font-size:10px; color:#888; margin-top:4px;">History</div>
-    </div>
-    <div onclick="showPage('profile-page')" style="text-align:center; flex:1; cursor:pointer;">
-        <i class="fas fa-user-friends" style="font-size:18px; color:#888;"></i>
-        <div style="font-size:10px; color:#888; margin-top:4px;">Refer</div>
-    </div>
-</div>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand(); // এটি অ্যাপটিকে টেলিগ্রাম স্ক্রিনে বড় করে দেখাবে
-    tg.ready();
-    </script>
 </body>
+        </html>
                                                                          </html>
