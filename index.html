@@ -8,70 +8,103 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        /* --- ১. ডিজাইনের কালার এবং স্টাইল (CSS) --- */
-        :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; --gold: #ffd700; --tg: #0088cc; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 70px; padding-bottom: 80px; }
+        /* ২. ডিজাইনের মেইন অংশ (CSS) */
+        :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 75px; padding-bottom: 80px; }
         
         .navbar { background: #111; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; }
-        .logo { font-weight: bold; color: var(--primary); font-size: 22px; text-decoration: none; }
+        .logo { font-weight: bold; color: var(--primary); font-size: 20px; text-decoration: none; }
+        #menu-trigger { display: none; cursor: pointer; font-size: 24px; color: var(--primary); }
+
+        /* সাইডবার মেনু স্টাইল */
+        .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
+        .sidebar.active { left: 0; }
+        .menu-btn { width: 100%; text-align: left; padding: 15px 25px; background: none; border: none; color: white; font-size: 14px; cursor: pointer; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; }
+        .dropdown-container { display: none; background: #151515; }
+        .dropdown-container a { display: block; padding: 12px 45px; color: #aaa; text-decoration: none; font-size: 13px; border-bottom: 1px solid #222; cursor: pointer; }
+
+        .auth-container { max-width: 400px; margin: 20px auto; padding: 10px; }
+        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; text-align: center; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; margin-bottom: 12px; box-sizing: border-box; }
+        .btn-main { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
         
-        .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
-        .card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: center; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; margin-bottom: 10px; }
-        .btn-main { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
-        #dashboard, #profile-page, #legal-page { display: none; padding: 20px; text-align: center; max-width: 800px; margin: 0 auto; }
-        .bal-card { background: linear-gradient(135deg, #111, #222); padding: 30px; border-radius: 25px; border: 1px solid #333; margin-bottom: 20px; }
-        
-        /* নিচের মেনু বার স্টাইল */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: none; justify-content: space-around; align-items: center; padding: 10px 0; border-top: 1px solid #222; z-index: 9999; }
-        .nav-item { text-align: center; flex: 1; cursor: pointer; color: #888; font-size: 10px; }
+        #dashboard, #profile-page, #legal-page { display: none; padding: 15px; max-width: 600px; margin: 0 auto; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0d0d0d; display: none; justify-content: space-around; align-items: center; padding: 12px 0; border-top: 1px solid #222; z-index: 9999; }
+        .nav-item { text-align: center; flex: 1; cursor: pointer; color: #777; font-size: 11px; }
         .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
+        <div id="menu-trigger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
         <a href="#" class="logo">EARN LOGIC</a>
-        <select id="lang-switch" style="width: auto; background: #222; padding: 5px;">
+        <select id="lang-switch" style="width: auto; background: #222; padding: 5px; margin:0;">
             <option value="en">English</option>
             <option value="bn">বাংলা</option>
         </select>
     </nav>
 
+    <div id="sidebar" class="sidebar">
+        <div style="padding:20px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--primary); font-weight:bold;">MENU</span>
+            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; color:red;"></i>
+        </div>
+        <button class="menu-btn" onclick="showPage('dashboard')">1. Dashboard</button>
+        <button class="menu-btn" onclick="toggleDrop('drop-act')">2. My Activity <i class="fas fa-chevron-down"></i></button>
+        <div id="drop-act" class="dropdown-container">
+            <a onclick="showNotice()">Task History</a>
+        </div>
+        <button class="menu-btn" onclick="showNotice()">3. Find Jobs</button>
+        <button class="menu-btn" onclick="showNotice()">4. Post a Job</button>
+        <button class="menu-btn" onclick="toggleDrop('drop-wall')">5. Wallet <i class="fas fa-chevron-down"></i></button>
+        <div id="drop-wall" class="dropdown-container">
+            <a onclick="showWithdraw()">Withdraw</a>
+            <a onclick="showNotice()">Transactions</a>
+        </div>
+        <button class="menu-btn" onclick="showPage('profile-page')">6. Profile & Refer</button>
+        <button class="menu-btn" onclick="showNotice()">7. Leaderboard</button>
+        <button class="menu-btn" onclick="showNotice()">8. Performance</button>
+        <button class="menu-btn" onclick="window.open('https://t.me/earnlogic_official_bot')">9. Support (TG)</button>
+        <button class="menu-btn" onclick="logout()" style="color:red; margin-top:20px;">10. Logout</button>
+    </div>
+
     <div class="auth-container" id="auth-ui">
         <div class="card" id="signup-form">
             <h2>Sign Up</h2>
             <input type="text" id="s-user" placeholder="Username">
-            <input type="email" id="s-email" placeholder="Email">
+            <input type="email" id="s-email" placeholder="Email Address">
             <input type="password" id="s-pass" placeholder="Password">
+            <select id="s-country" onchange="checkOtherCountry(this.value)">
+                <option value="Bangladesh">Bangladesh</option>
+                <option value="India">India</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="s-other-country" placeholder="Enter Country Name" style="display:none;">
+            <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
             <button class="btn-main" onclick="register()">Register</button>
-            <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px;">Already have an account? Login</p>
+            <p onclick="toggleForm()" style="cursor:pointer; color:#777; margin-top:15px;">Login here</p>
         </div>
         <div class="card" id="login-form" style="display:none">
             <h2>Login</h2>
             <input type="email" id="l-email" placeholder="Email">
             <input type="password" id="l-pass" placeholder="Password">
             <button class="btn-main" onclick="login()">Sign In</button>
-            <p onclick="toggleForm()" style="cursor:pointer; color:#555; margin-top:15px;">New here? Register</p>
+            <p onclick="forgotPassword()" style="color:var(--primary); font-size:12px; cursor:pointer; margin-top:10px;">Forgot Password?</p>
+            <p onclick="toggleForm()" style="cursor:pointer; color:#777; margin-top:15px;">New? Register</p>
         </div>
     </div>
 
     <div id="dashboard">
-        <div class="bal-card">
-            <p>Main Balance</p>
-            <h1 style="color:var(--primary); font-size:45px;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
+        <div class="bal-card" style="background:#111; padding:30px; border-radius:20px; border:1px solid #333; margin-bottom:20px; text-align:center;">
+            <p style="margin:0; color:#aaa;">Main Balance</p>
+            <h1 style="color:var(--primary); font-size:45px; margin:10px 0;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
             <button onclick="showWithdraw()" class="btn-main" style="width:auto; padding:10px 30px;">Withdraw Now</button>
         </div>
-        
-        <div onclick="window.location.href='https://t.me/earnlogic_official_bot'" style="background: linear-gradient(135deg, #0088cc, #00d4ff); padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; cursor:pointer;">
-            <div style="text-align:left;">
-                <h3 style="margin:0;">Earning via Telegram</h3>
-                <p style="margin:5px 0 0; font-size:12px;">Complete tasks in our bot!</p>
-            </div>
-            <i class="fab fa-telegram-plane" style="font-size:30px;"></i>
+        <div onclick="window.location.href='https://t.me/earnlogic_official_bot'" style="background: linear-gradient(135deg, #0088cc, #00d4ff); padding: 18px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; cursor:pointer;">
+            <div style="text-align:left;"><h3 style="margin:0;">Earning via Telegram</h3><p style="margin:5px 0 0; font-size:11px;">Join official bot!</p></div>
+            <i class="fab fa-telegram-plane" style="font-size:25px;"></i>
         </div>
     </div>
 
@@ -79,34 +112,28 @@
         <div class="card">
             <h2 id="legal-title" style="color:var(--primary);"></h2>
             <p id="legal-content" style="text-align:left; line-height:1.6; color:#ccc;"></p>
-            <button class="btn-main" onclick="showPage('dashboard')">Back to Home</button>
+            <button class="btn-main" onclick="showPage('dashboard')">Back</button>
         </div>
     </div>
 
     <div id="profile-page">
         <div class="card">
-            <h2>Your Profile</h2>
-            <p id="p-username" style="color:var(--primary); font-weight:bold;"></p>
-            <p id="p-email"></p>
-            <hr style="border:0.5px solid #222;">
-            <p>Referral Code:</p>
-            <div style="background:#000; padding:10px; border:1px dashed var(--primary);" id="ref-code">...</div>
-            <button class="btn-main" onclick="logout()" style="background:red; margin-top:20px;">Logout</button>
+            <i class="fas fa-user-circle" style="font-size:50px; color:var(--primary);"></i>
+            <h3 id="p-username">...</h3>
+            <p id="ref-code" style="background:#000; padding:10px; border:1px dashed var(--primary); color:var(--primary);">...</p>
         </div>
     </div>
 
     <div class="bottom-nav" id="bot-nav">
-        <div class="nav-item" onclick="showPage('dashboard')"><i class="fas fa-home"></i><div>Home</div></div>
-        <div class="nav-item" onclick="showLegal('about')"><i class="fas fa-info-circle"></i><div>About</div></div>
-        <div class="nav-item" onclick="showLegal('terms')"><i class="fas fa-file-contract"></i><div>Terms</div></div>
-        <div class="nav-item" onclick="showLegal('halal')"><i class="fas fa-mosque"></i><div>Halal</div></div>
-        <div class="nav-item" onclick="showPage('profile-page')"><i class="fas fa-user"></i><div>Profile</div></div>
+        <div class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-tasks"></i>Tasks</div>
+        <div class="nav-item" onclick="showLegal('about')"><i class="fas fa-info-circle"></i>About</div>
+        <div class="nav-item" onclick="showLegal('policy')"><i class="fas fa-shield-alt"></i>Policy</div>
+        <div class="nav-item" onclick="showLegal('halal')"><i class="fas fa-check-circle"></i>Halal</div>
+        <div class="nav-item" onclick="showPage('profile-page')"><i class="fas fa-user-friends"></i>Refer</div>
     </div>
 
     <script>
-        /* --- ৮. জাভাস্ক্রিপ্ট লজিক --- */
-        
-        // Firebase কনফিগ (তোমার দেওয়া তথ্য অনুযায়ী)
+        // ৮. জাভাস্ক্রিপ্ট লজিক
         const firebaseConfig = {
             apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
             authDomain: "earn-logic.firebaseapp.com",
@@ -119,60 +146,73 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // পেজ পরিবর্তনের ফাংশন
+        function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
+        function toggleDrop(id) {
+            const d = document.getElementById(id);
+            d.style.display = d.style.display === "block" ? "none" : "block";
+        }
+        function checkOtherCountry(val) {
+            document.getElementById('s-other-country').style.display = val === "Other" ? "block" : "none";
+        }
+
         function showPage(id) {
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('profile-page').style.display = 'none';
             document.getElementById('legal-page').style.display = 'none';
             document.getElementById(id).style.display = 'block';
+            if(window.innerWidth < 1000 && document.getElementById("sidebar").classList.contains("active")) toggleSidebar();
         }
 
-        // লিগ্যাল তথ্য দেখানোর ফাংশন (About, Terms, Halal)
         function showLegal(type) {
             const lang = document.getElementById('lang-switch').value;
             const data = {
-                about: { title: "About Us", en: "Earn Logic is a secure micro-task platform for real rewards.", bn: "আর্ন লজিক একটি নিরাপদ মাইক্রো-টাস্ক প্ল্যাটফর্ম।" },
-                terms: { title: "Terms & Policy", en: "1. One account per user. 2. No VPN. 3. No fake proof.", bn: "১. একজন একটি অ্যাকাউন্ট। ২. ভিপিএন নিষেধ। ৩. ভুয়া কাজ নিষেধ।" },
-                halal: { title: "Halal Guidelines", en: "We strictly follow halal earning policies. No gambling or adult content.", bn: "আমরা কঠোরভাবে হালাল উপার্জন নীতি অনুসরণ করি। কোনো জুয়া বা নিষিদ্ধ কাজ এখানে নেই।" }
+                about: { title: "About Us", en: "Professional Micro-task platform.", bn: "পেশাদার মাইক্রো-টাস্ক প্ল্যাটফর্ম।" },
+                policy: { title: "Privacy Policy", en: "Your data is secure with us.", bn: "আপনার তথ্য আমাদের কাছে সুরক্ষিত।" },
+                terms: { title: "Terms", en: "No VPN. No Fake work.", bn: "ভিপিএন এবং ভুয়া কাজ নিষেধ।" },
+                halal: { title: "Halal Guidelines", en: "100% Halal earning environment.", bn: "১০০% হালাল উপার্জনের পরিবেশ।" }
             };
             document.getElementById('legal-title').innerText = data[type].title;
             document.getElementById('legal-content').innerText = lang === 'bn' ? data[type].bn : data[type].en;
             showPage('legal-page');
         }
 
-        function toggleForm() {
-            document.getElementById("login-form").style.display = document.getElementById("login-form").style.display === "none" ? "block" : "none";
-            document.getElementById("signup-form").style.display = document.getElementById("signup-form").style.display === "none" ? "block" : "none";
+        function forgotPassword() {
+            const email = document.getElementById('l-email').value;
+            if(!email) return alert("Enter email first!");
+            auth.sendPasswordResetEmail(email).then(() => alert("Reset link sent!")).catch(e => alert(e.message));
         }
 
-        function showWithdraw() {
-            alert("Please use @earnlogic_official_bot for withdrawal.");
-            window.location.href = "https://t.me/earnlogic_official_bot";
-        }
-
-        // লগইন স্ট্যাটাস চেক
         auth.onAuthStateChanged(user => {
             const nav = document.getElementById('bot-nav');
+            const trigger = document.getElementById('menu-trigger');
             if(user) {
                 document.getElementById('auth-ui').style.display = 'none';
-                showPage('dashboard');
                 nav.style.display = 'flex';
+                trigger.style.display = 'block';
+                showPage('dashboard');
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         const d = doc.data();
                         document.getElementById('coins').innerText = d.coins || 0;
                         document.getElementById('p-username').innerText = d.username || "User";
-                        document.getElementById('p-email').innerText = d.email || "";
                         document.getElementById('ref-code').innerText = d.referCode || "...";
                     }
                 });
             } else {
                 document.getElementById('auth-ui').style.display = 'block';
                 nav.style.display = 'none';
-                showPage('dashboard'); // এটি হাইড থাকবে কারণ auth-ui সামনে
+                trigger.style.display = 'none';
             }
         });
 
+        function showNotice() { alert("Coming soon on Website! Use Telegram Bot for now."); }
+        function showWithdraw() { window.location.href = "https://t.me/earnlogic_official_bot"; }
+        function toggleForm() {
+            const login = document.getElementById("login-form");
+            const signup = document.getElementById("signup-form");
+            login.style.display = login.style.display === "none" ? "block" : "none";
+            signup.style.display = signup.style.display === "none" ? "block" : "none";
+        }
         function logout() { auth.signOut().then(() => location.reload()); }
     </script>
 </body>
