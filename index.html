@@ -8,66 +8,68 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* ২. ডিজাইনের মেইন অংশ (CSS) */
         :root { --primary: #00d4ff; --bg: #050505; --card: #121212; --text: #ffffff; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 75px; padding-bottom: 80px; }
         
+        /* Navbar */
         .navbar { background: #111; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid #222; box-sizing: border-box; }
         .logo { font-weight: bold; color: var(--primary); font-size: 20px; text-decoration: none; }
-        #menu-trigger { display: none; cursor: pointer; font-size: 24px; color: var(--primary); }
+        .menu-trigger { cursor: pointer; font-size: 22px; color: var(--primary); display: none; }
 
-        /* সাইডবার মেনু স্টাইল */
-        .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: #0d0d0d; transition: 0.4s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
+        /* Sidebar Menu */
+        .sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100%; background: #0d0d0d; transition: 0.3s; z-index: 1001; overflow-y: auto; border-right: 1px solid #222; }
         .sidebar.active { left: 0; }
-        .menu-btn { width: 100%; text-align: left; padding: 15px 25px; background: none; border: none; color: white; font-size: 14px; cursor: pointer; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; }
-        .dropdown-container { display: none; background: #151515; }
-        .dropdown-container a { display: block; padding: 12px 45px; color: #aaa; text-decoration: none; font-size: 13px; border-bottom: 1px solid #222; cursor: pointer; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .menu-btn { width: 100%; text-align: left; padding: 15px 20px; background: none; border: none; color: white; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .dropdown { display: none; background: #151515; }
+        .dropdown a { display: block; padding: 10px 40px; color: #888; text-decoration: none; font-size: 13px; border-bottom: 1px solid #222; }
 
-        .auth-container { max-width: 400px; margin: 20px auto; padding: 10px; }
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; text-align: center; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; margin-bottom: 12px; box-sizing: border-box; }
+        /* Auth UI */
+        .auth-container { max-width: 400px; margin: 30px auto; padding: 15px; }
+        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; text-align: center; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; margin-bottom: 15px; box-sizing: border-box; }
         .btn-main { width: 100%; padding: 13px; background: linear-gradient(45deg, #0072ff, #00d4ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
-        
-        #dashboard, #profile-page, #legal-page { display: none; padding: 15px; max-width: 600px; margin: 0 auto; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0d0d0d; display: none; justify-content: space-around; align-items: center; padding: 12px 0; border-top: 1px solid #222; z-index: 9999; }
-        .nav-item { text-align: center; flex: 1; cursor: pointer; color: #777; font-size: 11px; }
+
+        /* Pages */
+        #dashboard, #profile-page, #legal-page { display: none; padding: 20px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0d0d0d; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 9999; }
+        .nav-item { text-align: center; flex: 1; cursor: pointer; color: #666; font-size: 11px; }
         .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div id="menu-trigger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+        <div class="menu-trigger" id="m-trig" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
         <a href="#" class="logo">EARN LOGIC</a>
-        <select id="lang-switch" style="width: auto; background: #222; padding: 5px; margin:0;">
+        <select id="lang-switch" style="width: auto; margin: 0; padding: 5px;">
             <option value="en">English</option>
             <option value="bn">বাংলা</option>
         </select>
     </nav>
 
     <div id="sidebar" class="sidebar">
-        <div style="padding:20px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--primary); font-weight:bold;">MENU</span>
-            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; color:red;"></i>
+        <div class="sidebar-header">
+            <span style="color:var(--primary); font-weight:bold;">Main Menu</span>
+            <i class="fas fa-times" onclick="toggleSidebar()" style="color:red; cursor:pointer;"></i>
         </div>
         <button class="menu-btn" onclick="showPage('dashboard')">1. Dashboard</button>
-        <button class="menu-btn" onclick="toggleDrop('drop-act')">2. My Activity <i class="fas fa-chevron-down"></i></button>
-        <div id="drop-act" class="dropdown-container">
-            <a onclick="showNotice()">Task History</a>
-        </div>
-        <button class="menu-btn" onclick="showNotice()">3. Find Jobs</button>
-        <button class="menu-btn" onclick="showNotice()">4. Post a Job</button>
-        <button class="menu-btn" onclick="toggleDrop('drop-wall')">5. Wallet <i class="fas fa-chevron-down"></i></button>
-        <div id="drop-wall" class="dropdown-container">
-            <a onclick="showWithdraw()">Withdraw</a>
-            <a onclick="showNotice()">Transactions</a>
+        <button class="menu-btn" onclick="toggleDrop('act-drop')">2. My Activity <i class="fas fa-chevron-down"></i></button>
+        <div id="act-drop" class="dropdown"><a onclick="alert('No History')">Task History</a></div>
+        <button class="menu-btn" onclick="alert('Coming Soon')">3. Find Jobs</button>
+        <button class="menu-btn" onclick="alert('Coming Soon')">4. Post a Job</button>
+        <button class="menu-btn" onclick="toggleDrop('wall-drop')">5. Wallet <i class="fas fa-chevron-down"></i></button>
+        <div id="wall-drop" class="dropdown">
+            <a onclick="window.location.href='https://t.me/earnlogic_official_bot'">Withdraw</a>
+            <a onclick="alert('No Transactions')">Transactions</a>
         </div>
         <button class="menu-btn" onclick="showPage('profile-page')">6. Profile & Refer</button>
-        <button class="menu-btn" onclick="showNotice()">7. Leaderboard</button>
-        <button class="menu-btn" onclick="showNotice()">8. Performance</button>
+        <button class="menu-btn" onclick="alert('Coming Soon')">7. Leaderboard</button>
+        <button class="menu-btn" onclick="alert('Coming Soon')">8. Performance</button>
         <button class="menu-btn" onclick="window.open('https://t.me/earnlogic_official_bot')">9. Support (TG)</button>
-        <button class="menu-btn" onclick="logout()" style="color:red; margin-top:20px;">10. Logout</button>
+        <button class="menu-btn" onclick="logout()" style="color:red;">10. Logout</button>
     </div>
 
     <div class="auth-container" id="auth-ui">
@@ -76,64 +78,59 @@
             <input type="text" id="s-user" placeholder="Username">
             <input type="email" id="s-email" placeholder="Email Address">
             <input type="password" id="s-pass" placeholder="Password">
-            <select id="s-country" onchange="checkOtherCountry(this.value)">
+            <select id="s-country" onchange="document.getElementById('other-c').style.display = this.value=='Other'?'block':'none'">
                 <option value="Bangladesh">Bangladesh</option>
                 <option value="India">India</option>
-                <option value="Other">Other</option>
+                <option value="Other">Other Profile</option>
             </select>
-            <input type="text" id="s-other-country" placeholder="Enter Country Name" style="display:none;">
+            <input type="text" id="other-c" placeholder="Enter Country Name" style="display:none;">
             <input type="text" id="s-refer" placeholder="Refer Code (Optional)">
             <button class="btn-main" onclick="register()">Register</button>
-            <p onclick="toggleForm()" style="cursor:pointer; color:#777; margin-top:15px;">Login here</p>
+            <p onclick="toggleAuth()" style="cursor:pointer; color:#888; margin-top:15px;">Already have an account? Login</p>
         </div>
         <div class="card" id="login-form" style="display:none">
             <h2>Login</h2>
             <input type="email" id="l-email" placeholder="Email">
             <input type="password" id="l-pass" placeholder="Password">
             <button class="btn-main" onclick="login()">Sign In</button>
-            <p onclick="forgotPassword()" style="color:var(--primary); font-size:12px; cursor:pointer; margin-top:10px;">Forgot Password?</p>
-            <p onclick="toggleForm()" style="cursor:pointer; color:#777; margin-top:15px;">New? Register</p>
+            <p onclick="resetPass()" style="color:var(--primary); font-size:12px; cursor:pointer; margin-top:10px;">Forgot Password?</p>
+            <p onclick="toggleAuth()" style="cursor:pointer; color:#888; margin-top:15px;">New here? Sign Up</p>
         </div>
     </div>
 
     <div id="dashboard">
-        <div class="bal-card" style="background:#111; padding:30px; border-radius:20px; border:1px solid #333; margin-bottom:20px; text-align:center;">
-            <p style="margin:0; color:#aaa;">Main Balance</p>
-            <h1 style="color:var(--primary); font-size:45px; margin:10px 0;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
-            <button onclick="showWithdraw()" class="btn-main" style="width:auto; padding:10px 30px;">Withdraw Now</button>
-        </div>
-        <div onclick="window.location.href='https://t.me/earnlogic_official_bot'" style="background: linear-gradient(135deg, #0088cc, #00d4ff); padding: 18px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; cursor:pointer;">
-            <div style="text-align:left;"><h3 style="margin:0;">Earning via Telegram</h3><p style="margin:5px 0 0; font-size:11px;">Join official bot!</p></div>
-            <i class="fab fa-telegram-plane" style="font-size:25px;"></i>
+        <div class="card" style="margin-bottom:20px;">
+            <p style="color:#888; margin:0;">Main Balance</p>
+            <h1 style="color:var(--primary); font-size:40px; margin:10px 0;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
+            <button onclick="window.location.href='https://t.me/earnlogic_official_bot'" class="btn-main" style="width:auto; padding:10px 25px;">Withdraw Now</button>
         </div>
     </div>
 
     <div id="legal-page">
         <div class="card">
-            <h2 id="legal-title" style="color:var(--primary);"></h2>
-            <p id="legal-content" style="text-align:left; line-height:1.6; color:#ccc;"></p>
+            <h2 id="l-title" style="color:var(--primary);"></h2>
+            <p id="l-content" style="text-align:left; line-height:1.6; color:#ccc;"></p>
             <button class="btn-main" onclick="showPage('dashboard')">Back</button>
         </div>
     </div>
 
     <div id="profile-page">
         <div class="card">
-            <i class="fas fa-user-circle" style="font-size:50px; color:var(--primary);"></i>
             <h3 id="p-username">...</h3>
-            <p id="ref-code" style="background:#000; padding:10px; border:1px dashed var(--primary); color:var(--primary);">...</p>
+            <p id="p-email" style="font-size:12px; color:#666;"></p>
+            <div style="background:#000; padding:10px; border:1px dashed var(--primary); color:var(--primary); font-weight:bold; margin-top:15px;" id="ref-code">...</div>
         </div>
     </div>
 
     <div class="bottom-nav" id="bot-nav">
-        <div class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-tasks"></i>Tasks</div>
+        <div class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-home"></i>Home</div>
         <div class="nav-item" onclick="showLegal('about')"><i class="fas fa-info-circle"></i>About</div>
         <div class="nav-item" onclick="showLegal('policy')"><i class="fas fa-shield-alt"></i>Policy</div>
-        <div class="nav-item" onclick="showLegal('halal')"><i class="fas fa-check-circle"></i>Halal</div>
-        <div class="nav-item" onclick="showPage('profile-page')"><i class="fas fa-user-friends"></i>Refer</div>
+        <div class="nav-item" onclick="showLegal('halal')"><i class="fas fa-mosque"></i>Halal</div>
+        <div class="nav-item" onclick="showPage('profile-page')"><i class="fas fa-user"></i>Profile</div>
     </div>
 
     <script>
-        // ৮. জাভাস্ক্রিপ্ট লজিক
         const firebaseConfig = {
             apiKey: "AIzaSyAjOTYWJ8znUI-w10BYnDe2M9b4L4NkrqA",
             authDomain: "earn-logic.firebaseapp.com",
@@ -146,74 +143,87 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
-        function toggleDrop(id) {
-            const d = document.getElementById(id);
-            d.style.display = d.style.display === "block" ? "none" : "block";
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function toggleDrop(id) { 
+            const d = document.getElementById(id); 
+            d.style.display = d.style.display === 'block' ? 'none' : 'block'; 
         }
-        function checkOtherCountry(val) {
-            document.getElementById('s-other-country').style.display = val === "Other" ? "block" : "none";
+        function toggleAuth() {
+            const l = document.getElementById('login-form');
+            const s = document.getElementById('signup-form');
+            l.style.display = l.style.display==='none'?'block':'none';
+            s.style.display = s.style.display==='none'?'block':'none';
         }
 
         function showPage(id) {
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('profile-page').style.display = 'none';
-            document.getElementById('legal-page').style.display = 'none';
+            ['dashboard','profile-page','legal-page'].forEach(p => document.getElementById(p).style.display='none');
             document.getElementById(id).style.display = 'block';
-            if(window.innerWidth < 1000 && document.getElementById("sidebar").classList.contains("active")) toggleSidebar();
+            if(document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
         }
 
         function showLegal(type) {
-            const lang = document.getElementById('lang-switch').value;
             const data = {
-                about: { title: "About Us", en: "Professional Micro-task platform.", bn: "পেশাদার মাইক্রো-টাস্ক প্ল্যাটফর্ম।" },
-                policy: { title: "Privacy Policy", en: "Your data is secure with us.", bn: "আপনার তথ্য আমাদের কাছে সুরক্ষিত।" },
-                terms: { title: "Terms", en: "No VPN. No Fake work.", bn: "ভিপিএন এবং ভুয়া কাজ নিষেধ।" },
-                halal: { title: "Halal Guidelines", en: "100% Halal earning environment.", bn: "১০০% হালাল উপার্জনের পরিবেশ।" }
+                about: { t: "About Us", c: "Earn Logic is a premium micro-task platform." },
+                policy: { t: "Privacy Policy", c: "We protect your data and privacy." },
+                halal: { t: "Halal Guidelines", c: "All tasks are 100% Halal and ethical." }
             };
-            document.getElementById('legal-title').innerText = data[type].title;
-            document.getElementById('legal-content').innerText = lang === 'bn' ? data[type].bn : data[type].en;
+            document.getElementById('l-title').innerText = data[type].t;
+            document.getElementById('l-content').innerText = data[type].c;
             showPage('legal-page');
         }
 
-        function forgotPassword() {
-            const email = document.getElementById('l-email').value;
-            if(!email) return alert("Enter email first!");
-            auth.sendPasswordResetEmail(email).then(() => alert("Reset link sent!")).catch(e => alert(e.message));
+        // --- Auth Functions ---
+        async function register() {
+            const u = document.getElementById('s-user').value;
+            const e = document.getElementById('s-email').value;
+            const p = document.getElementById('s-pass').value;
+            if(!u || !e || !p) return alert("Fill all fields!");
+            try {
+                const res = await auth.createUserWithEmailAndPassword(e, p);
+                await db.collection('users').doc(res.user.uid).set({
+                    username: u, email: e, coins: 0, referCode: res.user.uid.substring(0,6).toUpperCase()
+                });
+                alert("Account Created!");
+            } catch(err) { alert(err.message); }
+        }
+
+        async function login() {
+            const e = document.getElementById('l-email').value;
+            const p = document.getElementById('l-pass').value;
+            try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert(err.message); }
+        }
+
+        function resetPass() {
+            const e = document.getElementById('l-email').value;
+            if(!e) return alert("Enter email first!");
+            auth.sendPasswordResetEmail(e).then(() => alert("Reset link sent!")).catch(e => alert(e.message));
         }
 
         auth.onAuthStateChanged(user => {
             const nav = document.getElementById('bot-nav');
-            const trigger = document.getElementById('menu-trigger');
+            const m = document.getElementById('m-trig');
             if(user) {
                 document.getElementById('auth-ui').style.display = 'none';
                 nav.style.display = 'flex';
-                trigger.style.display = 'block';
+                m.style.display = 'block';
                 showPage('dashboard');
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         const d = doc.data();
                         document.getElementById('coins').innerText = d.coins || 0;
-                        document.getElementById('p-username').innerText = d.username || "User";
-                        document.getElementById('ref-code').innerText = d.referCode || "...";
+                        document.getElementById('p-username').innerText = d.username;
+                        document.getElementById('p-email').innerText = d.email;
+                        document.getElementById('ref-code').innerText = "REFER: " + d.referCode;
                     }
                 });
             } else {
                 document.getElementById('auth-ui').style.display = 'block';
                 nav.style.display = 'none';
-                trigger.style.display = 'none';
+                m.style.display = 'none';
             }
         });
 
-        function showNotice() { alert("Coming soon on Website! Use Telegram Bot for now."); }
-        function showWithdraw() { window.location.href = "https://t.me/earnlogic_official_bot"; }
-        function toggleForm() {
-            const login = document.getElementById("login-form");
-            const signup = document.getElementById("signup-form");
-            login.style.display = login.style.display === "none" ? "block" : "none";
-            signup.style.display = signup.style.display === "none" ? "block" : "none";
-        }
         function logout() { auth.signOut().then(() => location.reload()); }
     </script>
 </body>
-</html>
+    </html>
