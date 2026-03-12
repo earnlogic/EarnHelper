@@ -68,7 +68,11 @@
         </div>
         <button class="menu-btn" onclick="showPage('profile-page')">6. Profile & Refer</button>
         <button class="menu-btn" onclick="alert('Coming Soon')">7. Leaderboard</button>
-        <button class="menu-btn" onclick="alert('Coming Soon')">8. Performance</button>
+        <button class="menu-btn" onclick="toggleDrop('perf-drop')">8. My Performance <i class="fas fa-chevron-down"></i></button>
+<div id="perf-drop" class="dropdown">
+    <a onclick="showPage('refer-page')">● Refer & Earn</a>
+    <a onclick="showTeam()">● Team</a> <a onclick="alert('Coming Soon')">● Rank-level</a>
+</div>
         <button class="menu-btn" onclick="window.open('https://t.me/earnlogic_official_bot')">9. Support (TG)</button>
         <button class="menu-btn" onclick="logout()" style="color:red;">10. Logout</button>
     </div>
@@ -103,7 +107,7 @@
         <div class="card">
             <p style="color:#888;">Main Balance</p>
             <h1 style="color:var(--primary); font-size:40px;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
-            <button onclick="window.location.href='https://t.me/earnlogic_official_bot'" class="btn-main">Withdraw</button>
+            <button onclick="handleWithdraw()" class="btn-main">Withdraw</button>
         </div>
     </div>
 
@@ -186,9 +190,17 @@
             
             try {
                 const res = await auth.createUserWithEmailAndPassword(e, p);
-                await db.collection('users').doc(res.user.uid).set({
-                    username: u, email: e, coins: 0, referCode: res.user.uid.substring(0,6).toUpperCase()
-                });
+                const refBy = document.getElementById('s-refer').value.trim().toUpperCase(); // রেফার কোড নেওয়া
+
+await db.collection('users').doc(res.user.uid).set({
+    username: u,
+    email: e,
+    coins: refBy ? 10 : 0, // রেফার কোড থাকলে ১০ কয়েন বোনাস
+    referCode: res.user.uid.substring(0,6).toUpperCase(),
+    referredBy: refBy || null, // কে রেফার করেছে তার রেকর্ড
+    pendingCommission: 0, // ৩% কমিশন এখানে জমবে
+    joinDate: new Date().toISOString()
+});
                 alert("রেজিস্ট্রেশন সফল হয়েছে!");
             } catch(err) { alert("ভুল: " + err.message); }
         }
@@ -225,6 +237,7 @@
                     if(doc.exists) {
                         const d = doc.data();
                         document.getElementById('coins').innerText = d.coins || 0;
+                        window.currentPendingComm = d.pendingCommission || 0; // এটা পরে উইথড্রতে কাজে লাগবে
                         document.getElementById('p-username').innerText = d.username;
                         document.getElementById('p-email').innerText = d.email;
                         document.getElementById('ref-code').innerText = "REFER CODE: " + d.referCode;
@@ -239,6 +252,29 @@
         });
 
         function logout() { auth.signOut().then(() => location.reload()); }
+        function handleWithdraw() {
+    const mainCoins = parseInt(document.getElementById('coins').innerText);
+    const totalBalance = mainCoins + window.currentPendingComm;
+    
+    alert("আপনার মেইন ব্যালেন্স " + mainCoins + " এবং রেফার কমিশন " + window.currentPendingComm + " মিলে মোট " + totalBalance + " কয়েন উইথড্র হবে।");
+    
+    // এরপর টেলিগ্রামে পাঠিয়ে দাও
+    window.location.href = 'https://t.me/earnlogic_official_bot';
+        }
+        async function showTeam() {
+    // এখানে 'my-ref-code' থেকে তোমার রেফার কোডটা নিচ্ছে
+    const myCodeElement = document.getElementById('my-ref-code');
+    const myCode = myCodeElement ? myCodeElement.innerText : "";
+    
+    if(!myCode || myCode === "...") {
+        alert("Please wait, loading your profile...");
+        return;
+    }
+
+    // ডাটাবেস থেকে চেক করা হচ্ছে কতজনের 'referredBy' তে তোমার কোড আছে
+    const snapshot = await db.collection('users').where('referredBy', '==', myCode).get();
+    alert("You have total " + snapshot.size + " members in your team.");
+        }
     </script>
 </body>
 </html>
