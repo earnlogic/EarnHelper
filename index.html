@@ -268,28 +268,29 @@ await db.collection('users').doc(res.user.uid).set({
                         document.getElementById('p-username').innerText = d.username;
                         document.getElementById('p-email').innerText = d.email;
                         document.getElementById('ref-code').innerText = "REFER CODE: " + d.referCode;
-                    }
-                });
-            } else {
-                document.getElementById('auth-ui').style.display = 'block';
-                nav.style.display = 'none';
-                m.style.display = 'none';
-                document.getElementById('dashboard').style.display = 'none';
+                        if(document.getElementById('my-ref-code')) {
+    if(document.getElementById('my-ref-code')) {
+                document.getElementById('my-ref-code').innerText = d.referCode || 'N/A';
             }
-        });
-
-        function logout() { auth.signOut().then(() => location.reload()); }
-        function handleWithdraw() {
-    const mainCoins = parseInt(document.getElementById('coins').innerText);
-    const totalBalance = mainCoins + window.currentPendingComm;
-    
-    alert("আপনার মেইন ব্যালেন্স " + mainCoins + " এবং রেফার কমিশন " + window.currentPendingComm + " মিলে মোট " + totalBalance + " কয়েন উইথড্র হবে।");
-    
-    // এরপর টেলিগ্রামে পাঠিয়ে দাও
-    window.location.href = 'https://t.me/earnlogic_official_bot';
         }
-        async function showTeam() {
-    // এখানে 'my-ref-code' থেকে তোমার রেফার কোডটা নিচ্ছে
+    });
+} else {
+    document.getElementById('auth-ui').style.display = 'block';
+    nav.style.display = 'none';
+    m.style.display = 'none';
+    document.getElementById('dashboard').style.display = 'none';
+                    }
+function handleWithdraw() {
+    const mainCoins = parseInt(document.getElementById('coins').innerText) || 0;
+    const pending = window.currentPendingComm || 0;
+    const totalBalance = mainCoins + pending;
+    
+    alert("Main Balance: " + mainCoins + " and Referral Commission: " + pending + ". Total: " + totalBalance + " coins will be processed for withdrawal.");
+    
+    window.location.href = 'https://t.me/earnlogic_official_bot';
+}
+
+async function showTeam() {
     const myCodeElement = document.getElementById('my-ref-code');
     const myCode = myCodeElement ? myCodeElement.innerText : "";
     
@@ -298,10 +299,9 @@ await db.collection('users').doc(res.user.uid).set({
         return;
     }
 
-    // ডাটাবেস থেকে চেক করা হচ্ছে কতজনের 'referredBy' তে তোমার কোড আছে
     const snapshot = await db.collection('users').where('referredBy', '==', myCode).get();
     alert("You have total " + snapshot.size + " members in your team.");
-        }
+}
     </script>
 </body>
 </html>
