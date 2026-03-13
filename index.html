@@ -126,7 +126,34 @@
             <div id="ref-code" style="background:#000; padding:10px; border:1px dashed var(--primary); color:var(--primary); margin-top:15px;">...</div>
         </div>
     </div>
+<div id="refer-page" style="display:none; padding:20px;">
+        <div class="card">
+            <h3 style="color:var(--primary);">Refer & Earn</h3>
+            <p style="font-size:13px; color:#aaa;">Invite friends and earn 10 Coins bonus!</p>
+            <div style="background:#000; padding:15px; border:1px dashed var(--primary); margin:15px 0;">
+                <span style="font-size:11px; color:#666;">Your Referral Code</span>
+                <div id="my-ref-code" style="font-size:22px; color:var(--primary); font-weight:bold;">...</div>
+            </div>
+            <button class="btn-main" onclick="copyRef()">Copy Link</button>
+            <button class="btn-main" style="margin-top:10px; background:#333;" onclick="showPage('dashboard')">Back</button>
+        </div>
+    </div>
 
+    <div id="withdraw-page" style="display:none; padding:20px;">
+        <div class="card">
+            <h2 style="color:var(--primary);">Withdraw Funds</h2>
+            <p style="font-size:12px; color:#666;">Minimum Withdraw: 500 Coins</p>
+            <select id="w-method">
+                <option value="Bkash">Bkash</option>
+                <option value="Nagad">Nagad</option>
+                <option value="Payeer">Payeer</option>
+            </select>
+            <input type="text" id="w-number" placeholder="Enter Account Number">
+            <input type="number" id="w-amount" placeholder="Enter Coins">
+            <button class="btn-main" onclick="submitWithdraw()">Submit Request</button>
+            <button class="btn-main" style="margin-top:10px; background:#333;" onclick="showPage('dashboard')">Back</button>
+        </div>
+    </div>
     <div class="bottom-nav" id="bot-nav">
         <div class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-home"></i>Home</div>
         <div class="nav-item" onclick="showLegal('about')"><i class="fas fa-info-circle"></i>About</div>
@@ -162,7 +189,7 @@
             s.style.display = s.style.display==='none'?'block':'none';
         }
         function showPage(id) {
-            ['dashboard','profile-page','legal-page'].forEach(p => document.getElementById(p).style.display='none');
+            ['dashboard','profile-page','legal-page','refer-page','withdraw-page'].forEach(p => document.getElementById(p).style.display='none');
             document.getElementById(id).style.display = 'block';
             if(document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
         }
