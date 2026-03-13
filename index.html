@@ -251,7 +251,7 @@ await db.collection('users').doc(res.user.uid).set({
             auth.sendPasswordResetEmail(e).then(() => alert("রিসেট লিঙ্ক ইমেইলে পাঠানো হয়েছে।")).catch(err => alert(err.message));
         }
 
-        // অটো লগইন চেক
+     // ৫. অটো লগইন চেক
         auth.onAuthStateChanged(user => {
             const nav = document.getElementById('bot-nav');
             const m = document.getElementById('m-trig');
@@ -260,48 +260,63 @@ await db.collection('users').doc(res.user.uid).set({
                 nav.style.display = 'flex';
                 m.style.display = 'block';
                 showPage('dashboard');
+                
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         const d = doc.data();
                         document.getElementById('coins').innerText = d.coins || 0;
-                        window.currentPendingComm = d.pendingCommission || 0; // এটা পরে উইথড্রতে কাজে লাগবে
+                        window.currentPendingComm = d.pendingCommission || 0;
                         document.getElementById('p-username').innerText = d.username;
                         document.getElementById('p-email').innerText = d.email;
                         document.getElementById('ref-code').innerText = "REFER CODE: " + d.referCode;
+                        
                         if(document.getElementById('my-ref-code')) {
-    if(document.getElementById('my-ref-code')) {
-                document.getElementById('my-ref-code').innerText = d.referCode || 'N/A';
-            }
-        }
-    });
-} else {
-    document.getElementById('auth-ui').style.display = 'block';
-    nav.style.display = 'none';
-    m.style.display = 'none';
-    document.getElementById('dashboard').style.display = 'none';
+                            document.getElementById('my-ref-code').innerText = d.referCode || 'N/A';
+                        }
                     }
-function handleWithdraw() {
-    const mainCoins = parseInt(document.getElementById('coins').innerText) || 0;
-    const pending = window.currentPendingComm || 0;
-    const totalBalance = mainCoins + pending;
-    
-    alert("Main Balance: " + mainCoins + " and Referral Commission: " + pending + ". Total: " + totalBalance + " coins will be processed for withdrawal.");
-    
-    window.location.href = 'https://t.me/earnlogic_official_bot';
-}
+                });
+            } else {
+                document.getElementById('auth-ui').style.display = 'block';
+                nav.style.display = 'none';
+                m.style.display = 'none';
+                document.getElementById('dashboard').style.display = 'none';
+            }
+        });
 
-async function showTeam() {
-    const myCodeElement = document.getElementById('my-ref-code');
-    const myCode = myCodeElement ? myCodeElement.innerText : "";
-    
-    if(!myCode || myCode === "...") {
-        alert("Please wait, loading your profile...");
-        return;
-    }
+        function logout() { auth.signOut().then(() => location.reload()); }
 
-    const snapshot = await db.collection('users').where('referredBy', '==', myCode).get();
-    alert("You have total " + snapshot.size + " members in your team.");
-}
+        function handleWithdraw() {
+            const mainCoins = parseInt(document.getElementById('coins').innerText) || 0;
+            const pending = window.currentPendingComm || 0;
+            const totalBalance = mainCoins + pending;
+            alert("Main Balance: " + mainCoins + " and Referral Commission: " + pending + ". Total: " + totalBalance + " coins will be processed.");
+            window.location.href = 'https://t.me/earnlogic_official_bot';
+        }
+
+        async function showTeam() {
+            const myCodeElement = document.getElementById('my-ref-code');
+            const myCode = myCodeElement ? myCodeElement.innerText : "";
+            if(!myCode || myCode === "...") {
+                alert("Please wait, loading your profile...");
+                return;
+            }
+            const snapshot = await db.collection('users').where('referredBy', '==', myCode).get();
+            alert("আপনার টিমে মোট " + snapshot.size + " জন মেম্বার আছে।");
+        }
+
+        function copyRef() {
+            const code = document.getElementById('my-ref-code').innerText;
+            if(!code || code === "...") {
+                alert("Please wait, loading your profile...");
+                return;
+            }
+            const refLink = "https://earnlogic.github.io/EarnHelper/?ref=" + code;
+            navigator.clipboard.writeText(refLink).then(() => {
+                alert("Refer Link Copied: " + refLink);
+            }).catch(err => {
+                alert("Could not copy: " + err);
+            });
+        }
     </script>
 </body>
 </html>
