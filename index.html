@@ -175,7 +175,20 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+// ১. লিঙ্ক থেকে অটো রেফার কোড খুঁজে বের করা
+const urlParams = new URLSearchParams(window.location.search);
+const refFromUrl = urlParams.get('ref');
 
+// ২. যদি লিঙ্কে রেফার কোড থাকে, তবে সাইন-আপ ফর্মে বসিয়ে দেওয়া
+if (refFromUrl) {
+    setTimeout(() => {
+        const refInput = document.getElementById('s-refer');
+        if (refInput) {
+            refInput.value = refFromUrl.toUpperCase();
+            console.log("Refer code auto-filled: " + refFromUrl);
+        }
+    }, 1200);
+}
         // ইন্টারফেস কন্ট্রোল
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         function toggleDrop(id) { 
@@ -316,7 +329,7 @@ await db.collection('users').doc(res.user.uid).set({
                 alert("Please wait, loading your profile...");
                 return;
             }
-            const refLink = "https://earnlogic.github.io/EarnHelper/?ref=" + code;
+            const refLink = "https://earnlogic.github.io/?ref=" + code;
             navigator.clipboard.writeText(refLink).then(() => {
                 alert("Refer Link Copied: " + refLink);
             }).catch(err => {
