@@ -63,10 +63,12 @@
         <button class="menu-btn" onclick="alert('Coming Soon')">4. Post a Job</button>
         <button class="menu-btn" onclick="toggleDrop('wall-drop')">5. Wallet <i class="fas fa-chevron-down"></i></button>
         <div id="wall-drop" class="dropdown">
-            <a onclick="window.location.href='https://t.me/earnlogic_official_bot'">Withdraw</a>
-            <a onclick="alert('No Transactions')">Transactions</a>
+            <a onclick="showPage('wallet-dash')">● Wallet Dashboard</a>
+            <a onclick="showPage('withdraw-page')">● Withdraw Funds</a>
+            <a onclick="showPage('trans-history')">● Transaction History</a>
+            <a onclick="showPage('deposit-page')">● Deposit Balance</a>
+            <a onclick="showPage('success-card')">● Payment Success Card</a>
         </div>
-        <button class="menu-btn" onclick="showPage('profile-page')">6. Profile & Refer</button>
         <button class="menu-btn" onclick="alert('Coming Soon')">7. Leaderboard</button>
         <button class="menu-btn" onclick="toggleDrop('perf-drop')">8. My Performance <i class="fas fa-chevron-down"></i></button>
 <div id="perf-drop" class="dropdown">
@@ -138,7 +140,49 @@
             <button class="btn-main" style="margin-top:10px; background:#333;" onclick="showPage('dashboard')">Back</button>
         </div>
     </div>
+<div id="wallet-dash" style="display:none; padding:20px;">
+        <div class="card">
+            <h3 style="color:var(--primary);">Wallet Overview</h3>
+            <div style="display:flex; justify-content:space-around; margin-top:15px;">
+                <div>
+                    <p style="font-size:12px; color:#888;">Work Coins</p>
+                    <h2 id="work-coins" style="color:#fff;">0</h2>
+                </div>
+                <div>
+                    <p style="font-size:12px; color:#888;">Refer Coins</p>
+                    <h2 id="refer-coins" style="color:#fff;">0</h2>
+                </div>
+            </div>
+            <hr style="border:0.5px solid #222; margin:15px 0;">
+            <p style="font-size:12px; color:#888;">Total Payable Balance</p>
+            <h1 style="color:var(--primary);"><i class="fas fa-wallet"></i> <span id="total-wallet">0</span></h1>
+            <button class="btn-main" onclick="showPage('withdraw-page')">Go to Withdraw</button>
+        </div>
+    </div>
 
+    <div id="trans-history" style="display:none; padding:20px;">
+        <div class="card">
+            <h3 style="color:var(--primary);">Transaction History</h3>
+            <div id="history-list" style="text-align:left; margin-top:15px; font-size:13px;">
+                <p style="color:#666; text-align:center;">No transactions found.</p>
+            </div>
+            <button class="btn-main" style="margin-top:10px; background:#333;" onclick="showPage('wallet-dash')">Back</button>
+        </div>
+    </div>
+
+    <div id="deposit-page" style="display:none; padding:20px;">
+        <div class="card">
+            <h3 style="color:var(--primary);">Deposit Balance</h3>
+            <p style="font-size:12px; color:#aaa;">আমাদের বিকাশ/নগদ নাম্বারে টাকা পাঠিয়ে ট্রানজেকশন আইডি দিন।</p>
+            <div style="background:#111; padding:10px; border-radius:8px; margin:10px 0; text-align:left;">
+                <p style="font-size:13px;">Bkash/Nagad: 017XXXXXXXX</p>
+            </div>
+            <input type="text" id="d-txid" placeholder="Enter Transaction ID">
+            <input type="number" id="d-amount" placeholder="Enter Amount (TK)">
+            <button class="btn-main">Submit Deposit</button>
+            <button class="btn-main" style="margin-top:10px; background:#333;" onclick="showPage('wallet-dash')">Back</button>
+        </div>
+    </div>
     <div id="withdraw-page" style="display:none; padding:20px;">
         <div class="card">
             <h2 style="color:var(--primary);">Withdraw Funds</h2>
@@ -202,8 +246,13 @@ if (refFromUrl) {
             s.style.display = s.style.display==='none'?'block':'none';
         }
         function showPage(id) {
-            ['dashboard','profile-page','legal-page','refer-page','withdraw-page'].forEach(p => document.getElementById(p).style.display='none');
-            document.getElementById(id).style.display = 'block';
+            const pages = ['dashboard','profile-page','legal-page','refer-page','withdraw-page','wallet-dash','trans-history','deposit-page','success-card'];
+            pages.forEach(p => {
+                const el = document.getElementById(p);
+                if(el) el.style.display = 'none';
+            });
+            const target = document.getElementById(id);
+            if(target) target.style.display = 'block';
             if(document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
         }
 
