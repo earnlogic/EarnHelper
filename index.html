@@ -185,18 +185,47 @@
     </div>
     <div id="withdraw-page" style="display:none; padding:20px;">
         <div class="card">
-            <h2 style="color:var(--primary);">Withdraw Funds</h2>
-            <p style="font-size:12px; color:#666;">Minimum Withdraw: 500 Coins</p>
-            <select id="w-method">
-                <option value="Bkash">Bkash</option>
-                <option value="Nagad">Nagad</option>
-                <option value="Payeer">Payeer</option>
-            </select>
-            <input type="text" id="w-number" placeholder="Enter Account Number">
-            <input type="number" id="w-amount" placeholder="Enter Coins">
-            <button class="btn-main" onclick="submitWithdraw()">Submit Request</button>
+            <h2 style="color:var(--primary); margin-bottom:15px;">Withdraw Funds</h2>
+            
+            <div style="display:flex; justify-content:space-around; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                <div onclick="setMethod('Bkash')" class="method-card">
+                    <img src="https://z-m-static.xx.fbcdn.net/rsrc.php/v3/yB/r/hD6dE-d8TOW.png" width="40">
+                    <p style="font-size:10px; margin-top:5px;">Bkash</p>
+                </div>
+                <div onclick="setMethod('Nagad')" class="method-card">
+                    <img src="https://iconape.com/wp-content/files/nc/331398/png/nc.png" width="40">
+                    <p style="font-size:10px; margin-top:5px;">Nagad</p>
+                </div>
+                <div onclick="setMethod('Binance')" class="method-card">
+                    <img src="https://static.cryptorival.com/icons/binance.png" width="40">
+                    <p style="font-size:10px; margin-top:5px;">Binance</p>
+                </div>
+                <div onclick="setMethod('Recharge')" class="method-card">
+                    <i class="fas fa-mobile-alt" style="font-size:30px; color:#aaa;"></i>
+                    <p style="font-size:10px; margin-top:5px;">Recharge</p>
+                </div>
+            </div>
+
+            <div id="input-section" style="display:none; text-align:left; border-top:1px solid #222; padding-top:15px;">
+                <p id="method-info" style="font-size:12px; color:#ffb700; margin-bottom:10px;"></p>
+                <input type="text" id="w-number" placeholder="Account Number">
+                <input type="number" id="w-amount" placeholder="Enter Coins">
+                
+                <div style="background:#111; padding:12px; border-radius:10px; border:1px solid #222; margin-top:10px;">
+                    <p style="font-size:11px; color:#888;">Expected Payment:</p>
+                    <h3 id="receive-amount" style="color:var(--primary); margin:5px 0;">0.00 TK</h3>
+                    <p id="charge-details" style="font-size:10px; color:#666;"></p>
+                </div>
+                <button class="btn-main" onclick="processWithdraw()" style="margin-top:15px;">Submit Request</button>
+            </div>
             <button class="btn-main" style="margin-top:10px; background:#333;" onclick="showPage('dashboard')">Back</button>
         </div>
+    </div>
+
+    <style>
+    .method-card { background:#151515; padding:10px; border-radius:12px; border:1px solid #222; width:65px; cursor:pointer; text-align:center; transition:0.3s; }
+    .method-card:hover { border-color:var(--primary); background:#1a1a1a; }
+    </style>
     </div>
     <div class="bottom-nav" id="bot-nav">
         <div class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-home"></i>Home</div>
@@ -385,6 +414,48 @@ await db.collection('users').doc(res.user.uid).set({
                 alert("Could not copy: " + err);
             });
         }
+        let selectedMethod = "";
+
+function setMethod(method) {
+    selectedMethod = method;
+    document.getElementById('input-section').style.display = 'block';
+    const info = document.getElementById('method-info');
+    
+    if(method === 'Bkash' || method === 'Nagad') {
+        info.innerText = "Min: 30 TK (300 Coins). Fee: 10% (Min 2 TK) + 5 TK Send Money Fee (up to 200 TK).";
+    } else if(method === 'Binance') {
+        info.innerText = "Min: 0.10$ (140 Coins). Web Fee: 10%.";
+    } else if(method === 'Recharge') {
+        info.innerText = "Min: 20 TK (200 Coins). Web Fee: 5% (Min 1 TK).";
+    }
+}
+
+// Real-time Calculator Logic
+document.getElementById('w-amount').addEventListener('input', function() {
+    const coins = parseInt(this.value) || 0;
+    let receive = 0; let chargeTxt = ""; let unit = "TK";
+
+    if(selectedMethod === 'Bkash' || selectedMethod === 'Nagad') {
+        let webCharge = Math.max(20, Math.floor(coins * 0.1)); 
+        let finalCoins = coins - webCharge;
+        if(coins <= 2000) finalCoins -= 50; 
+        receive = (finalCoins / 10).toFixed(2);
+        chargeTxt = `Web: ${webCharge/10} TK | Fee: ${coins<=2000?5:0} TK`;
+    } 
+    else if(selectedMethod === 'Recharge') {
+        let webCharge = Math.max(10, Math.floor(coins * 0.05));
+        receive = ((coins - webCharge) / 10).toFixed(2);
+        chargeTxt = `Web Fee: ${webCharge/10} TK`;
+    }
+    else if(selectedMethod === 'Binance') {
+        let webCharge = Math.floor(coins * 0.1);
+        receive = ((coins - webCharge) / 1200).toFixed(3);
+        unit = "USDT";
+        chargeTxt = `Web Fee: 10%`;
+    }
+    document.getElementById('receive-amount').innerText = (receive > 0 ? receive : "0.00") + " " + unit;
+    document.getElementById('charge-details').innerText = chargeTxt;
+});
     </script>
 </body>
 </html>
