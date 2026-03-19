@@ -41,6 +41,10 @@
     </style>
 </head>
 <body>
+    <!-- অ্যাডমিন প্যানেলের নোটিশ এখানে দেখাবে -->
+<div id="notice-board" style="background: linear-gradient(45deg, #00d4ff, #0055ff); color: white; padding: 12px; margin: 15px; border-radius: 10px; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(0,212,255,0.3); font-size: 14px;">
+    সিস্টেম আপডেট হচ্ছে...
+</div>
 
     <nav class="navbar">
         <div class="menu-trigger" id="m-trig" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
@@ -372,6 +376,20 @@ await db.collection('users').doc(res.user.uid).set({
                         }
                     }
                 });
+                // অ্যাডমিন সেটিংস লাইভ আপডেট
+db.collection('settings').doc('app_control').onSnapshot(doc => {
+    if(doc.exists) {
+        const data = doc.data();
+        // কয়েন রেট গ্লোবাল ভেরিয়েবলে আপডেট হবে
+        window.coinRate = data.rate; 
+        
+        // যদি তোমার সাইটে কোনো নোটিশ বোর্ড থাকে (id="notice-board")
+        let nBoard = document.getElementById('notice-board');
+        if(nBoard) nBoard.innerText = data.notice;
+        
+        console.log("Live Rate Updated: 100 Coins = " + window.coinRate + " TK");
+    }
+});
             } else {
                 document.getElementById('auth-ui').style.display = 'block';
                 nav.style.display = 'none';
