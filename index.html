@@ -395,15 +395,46 @@ await db.collection('users').doc(res.user.uid).set({
                 m.style.display = 'none';
                 document.getElementById('dashboard').style.display = 'none';
             }
+        });
 
         function logout() { auth.signOut().then(() => location.reload()); }
 
         function handleWithdraw() {
+            const amount = parseInt(document.getElementById('w-amount').value) || 0;
+            const method = document.getElementById('w-method').value;
+            const account = document.getElementById('w-account').value;
             const mainCoins = parseInt(document.getElementById('coins').innerText) || 0;
-            const pending = window.currentPendingComm || 0;
-            const totalBalance = mainCoins + pending;
-            alert("Main Balance: " + mainCoins + " and Referral Commission: " + pending + ". Total: " + totalBalance + " coins will be processed.");
-            window.location.href = 'https://t.me/earnlogic_official_bot';
+
+            if (!currentUserId) {
+                alert("দয়া করে আগে লগইন করুন!");
+                return;
+            }
+            if (amount < 100) {
+                alert("সর্বনিম্ন ১০০ কয়েন উইথড্র করা যাবে!");
+                return;
+            }
+            if (amount > mainCoins) {
+                alert("আপনার পর্যাপ্ত ব্যালেন্স নেই!");
+                return;
+            }
+            if (!account) {
+                alert("আপনার পেমেন্ট নম্বর দিন!");
+                return;
+            }
+
+            // ডাটাবেসে রিকোয়েস্ট পাঠানো
+            db.collection('withdrawals').add({
+                uid: currentUserId,
+                amount: amount,
+                method: method,
+                account: account,
+                status: 'Pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("আপনার উইথড্র রিকোয়েস্ট সফলভাবে জমা হয়েছে!");
+                showPage('dashboard');
+            }).catch(err => alert("এরর: " + err.message));
+        
         }
 
         async function showTeam() {
