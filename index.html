@@ -252,6 +252,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        let currentUserId = null;
 // ১. লিঙ্ক থেকে অটো রেফার কোড খুঁজে বের করা
 const urlParams = new URLSearchParams(window.location.search);
 const refFromUrl = urlParams.get('ref');
@@ -351,6 +352,7 @@ await db.collection('users').doc(res.user.uid).set({
             const nav = document.getElementById('bot-nav');
             const m = document.getElementById('m-trig');
             if(user) {
+                currentUserId = user.uid; // <-- এই লাইনটি যোগ হলো
                 document.getElementById('auth-ui').style.display = 'none';
                 nav.style.display = 'flex';
                 m.style.display = 'block';
@@ -365,7 +367,6 @@ await db.collection('users').doc(res.user.uid).set({
                         document.getElementById('p-email').innerText = d.email;
                         document.getElementById('ref-code').innerText = "REFER CODE: " + d.referCode;
                         
-                     
                         if (!d.referCode) {
                             const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
                             db.collection('users').doc(user.uid).update({ referCode: newCode });
@@ -376,27 +377,24 @@ await db.collection('users').doc(res.user.uid).set({
                         }
                     }
                 });
+
                 // অ্যাডমিন সেটিংস লাইভ আপডেট
-db.collection('settings').doc('app_control').onSnapshot(doc => {
-    if(doc.exists) {
-        const data = doc.data();
-        // কয়েন রেট গ্লোবাল ভেরিয়েবলে আপডেট হবে
-        window.coinRate = data.rate; 
-        
-        // যদি তোমার সাইটে কোনো নোটিশ বোর্ড থাকে (id="notice-board")
-        let nBoard = document.getElementById('notice-board');
-        if(nBoard) nBoard.innerText = data.notice;
-        
-        console.log("Live Rate Updated: 100 Coins = " + window.coinRate + " TK");
-    }
-});
+                db.collection('settings').doc('app_control').onSnapshot(doc => {
+                    if(doc.exists) {
+                        const data = doc.data();
+                        window.coinRate = data.rate; 
+                        let nBoard = document.getElementById('notice-board');
+                        if(nBoard) nBoard.innerText = data.notice;
+                        console.log("Live Rate Updated");
+                    }
+                });
             } else {
+                currentUserId = null; // লগআউট হলে আইডি খালি হবে
                 document.getElementById('auth-ui').style.display = 'block';
                 nav.style.display = 'none';
                 m.style.display = 'none';
                 document.getElementById('dashboard').style.display = 'none';
             }
-        });
 
         function logout() { auth.signOut().then(() => location.reload()); }
 
