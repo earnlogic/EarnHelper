@@ -313,8 +313,7 @@ if (refFromUrl) {
             
             try {
                 const res = await auth.createUserWithEmailAndPassword(e, p);
-                const refBy = document.getElementById('s-refer').value.trim().toUpperCase(); // রেফার কোড নেওয়া
-
+                const refBy = document.getElementById('s-refer').value.trim().toUpperCase();
 // ৩ মাস পরের তারিখ সেট করা (কমিশন মেয়াদের জন্য)
                 const expiryDate = new Date();
                 expiryDate.setMonth(expiryDate.getMonth() + 3);
@@ -342,7 +341,32 @@ if (refFromUrl) {
                 alert("রেজিস্ট্রেশন সফল হয়েছে!");
             } catch(err) { alert("ভুল: " + err.message); }
         }
+// ৩% রেফার কমিশন দেওয়ার ফাংশন
+        async function giveCommission(workerId, rewardAmount) {
+            try {
+                const workerRef = db.collection('users').doc(workerId);
+                const doc = await workerRef.get();
+                const data = doc.data();
 
+                if (data && data.referredBy) {
+                    const now = new Date();
+                    const expiry = new Date(data.commissionExpiry);
+
+                    // যদি ৩ মাস পার না হয় তবেই কমিশন পাবে
+                    if (now < expiry) {
+                        const bonus = rewardAmount * 0.03; // ৩% বোনাস হিসাব
+                        const referrerSnap = await db.collection('users').where('referCode', '==', data.referredBy).get();
+                        
+                        if (!referrerSnap.empty) {
+                            const referrerId = referrerSnap.docs[0].id;
+                            await db.collection('users').doc(referrerId).update({
+                                coins: firebase.firestore.FieldValue.increment(bonus)
+                            });
+                        }
+                    }
+                }
+            } catch (e) { console.error("Commission Error: ", e); }
+        }
         // লগইন (এটিই আপনার সমস্যা ছিল, এখন ঠিক করা হয়েছে)
         async function loginUser() {
             const e = document.getElementById('l-email').value;
