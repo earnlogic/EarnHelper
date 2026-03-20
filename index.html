@@ -315,15 +315,30 @@ if (refFromUrl) {
                 const res = await auth.createUserWithEmailAndPassword(e, p);
                 const refBy = document.getElementById('s-refer').value.trim().toUpperCase(); // রেফার কোড নেওয়া
 
-await db.collection('users').doc(res.user.uid).set({
-    username: u,
-    email: e,
-    coins: refBy ? 10 : 0, // রেফার কোড থাকলে ১০ কয়েন বোনাস
-    referCode: res.user.uid.substring(0,6).toUpperCase(),
-    referredBy: refBy || null, // কে রেফার করেছে তার রেকর্ড
-    pendingCommission: 0, // ৩% কমিশন এখানে জমবে
-    joinDate: new Date().toISOString()
-});
+// ৩ মাস পরের তারিখ সেট করা (কমিশন মেয়াদের জন্য)
+                const expiryDate = new Date();
+                expiryDate.setMonth(expiryDate.getMonth() + 3);
+
+                await db.collection('users').doc(res.user.uid).set({
+                    username: u,
+                    email: e,
+                    coins: 0, // নতুন ইউজার ০ পাবে (তুমি চাইলে ১০ দিতে পারো)
+                    referCode: res.user.uid.substring(0,6).toUpperCase(),
+                    referredBy: refBy || null,
+                    commissionExpiry: expiryDate.toISOString(), // ৩ মাস মেয়াদ
+                    joinDate: new Date().toISOString()
+                });
+
+                // --- ১ নম্বর অংশ: যে রেফার করেছে তাকে ১০ কয়েন দেওয়া ---
+                if (refBy) {
+                    const referrerSnap = await db.collection('users').where('referCode', '==', refBy).get();
+                    if (!referrerSnap.empty) {
+                        const referrerDoc = referrerSnap.docs[0];
+                        await db.collection('users').doc(referrerDoc.id).update({
+                            coins: firebase.firestore.FieldValue.increment(10) // রেফারার ১০ কয়েন পেল
+                        });
+                    }
+                }
                 alert("রেজিস্ট্রেশন সফল হয়েছে!");
             } catch(err) { alert("ভুল: " + err.message); }
         }
@@ -511,53 +526,55 @@ document.getElementById('w-amount').addEventListener('input', function() {
     document.getElementById('charge-details').innerText = chargeTxt;
 });
     async function processWithdraw() {
-    const amount = parseInt(document.getElementById('w-amount').value);
-    const number = document.getElementById('w-number').value;
-    
-    // ইউজার আইডি চেক (তুমি অলরেডি currentUserId ভেরিয়েবলে এটি পাচ্ছ)
-    if (!currentUserId) return alert("দয়া করে আগে লগইন করুন!");
-    if (!selectedMethod) return alert("পেমেন্ট মেথড সিলেক্ট করুন।");
-    if (!amount || amount < 100) return alert("সর্বনিম্ন ১০০ কয়েন প্রয়োজন।");
-    if (!number || number.length < 10) return alert("সঠিক নম্বর দিন।");
+        const amount = parseInt(document.getElementById('w-amount').value);
+        const number = document.getElementById('w-number').value;
+        
+        if (!currentUserId) return alert("দয়া করে আগে লগইন করুন!");
+        if (!selectedMethod) return alert("পেমেন্ট মেথড সিলেক্ট করুন।");
+        if (!amount || amount < 100) return alert("সর্বনিম্ন ১০০ কয়েন প্রয়োজন।");
+        if (!number || number.length < 10) return alert("সঠিক নম্বর দিন।");
 
-    const submitBtn = document.querySelector('button[onclick="processWithdraw()"]');
-    submitBtn.disabled = true;
-    submitBtn.innerText = "Processing...";
+        const submitBtn = document.querySelector('button[onclick="processWithdraw()"]');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Processing...";
 
-    try {
-        const userRef = db.collection('users').doc(currentUserId);
-        const doc = await userRef.get();
+        try {
+            const userRef = db.collection('users').doc(currentUserId);
+            const doc = await userRef.get();
+            const mainCoins = doc.data().coins || 0;
 
-        if (doc.exists && doc.data().coins >= amount) {
-            // ১. ডাটাবেসে রিকোয়েস্ট পাঠানো
-            await db.collection('withdrawals').add({
-                uid: currentUserId,
-                username: doc.data().username,
-                email: doc.data().email,
-                method: selectedMethod,
-                amount: amount,
-                account: number,
-                status: "Pending", // শুরুতে স্ট্যাটাস পেন্ডিং থাকবে
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            if (mainCoins >= amount) {
+                // ১. ডাটাবেসে রিকোয়েস্ট পাঠানো
+                await db.collection('withdrawals').add({
+                    uid: currentUserId,
+                    username: doc.data().username,
+                    email: doc.data().email,
+                    method: selectedMethod,
+                    amount: amount, 
+                    account: number,
+                    status: "Pending",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-            // ২. ইউজারের কয়েন কেটে নেওয়া
-            await userRef.update({
-                coins: firebase.firestore.FieldValue.increment(-amount)
-            });
+                // ২. ইউজারের ব্যালেন্স থেকে কয়েন কেটে নেওয়া
+                await userRef.update({
+                    coins: firebase.firestore.FieldValue.increment(-amount)
+                });
 
-            alert("সফল হয়েছে! অ্যাডমিন চেক করে পেমেন্ট করে দেবে।");
-            location.reload(); 
-        } else {
-            alert("আপনার পর্যাপ্ত কয়েন নেই।");
+                alert("সফল হয়েছে! ১০% ফি এবং চার্জ কেটে পেমেন্ট পাঠানো হবে।");
+                location.reload(); 
+            } else {
+                alert("আপনার পর্যাপ্ত কয়েন নেই।");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Submit Request";
+            }
+        } catch (error) {
+            console.error(error);
+            alert("সার্ভারে সমস্যা হয়েছে।");
             submitBtn.disabled = false;
             submitBtn.innerText = "Submit Request";
         }
-    } catch (error) {
-        console.error(error);
-        alert("সার্ভারে সমস্যা হয়েছে।");
-        submitBtn.disabled = false;
-    }
+            }
     }    
     </script>
 </body>
