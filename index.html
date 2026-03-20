@@ -405,12 +405,11 @@ if (refFromUrl) {
                         document.getElementById('p-username').innerText = d.username;
                         document.getElementById('p-email').innerText = d.email;
                         document.getElementById('ref-code').innerText = "REFER CODE: " + d.referCode;
-                        
-                        if (!d.referCode) {
-                            const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                            db.collection('users').doc(user.uid).update({ referCode: newCode });
-                        }
-
+                        // যদি ইউজারের আগে থেকে কোনো রেফার কোড না থাকে, তবেই নতুন কোড সেট হবে
+            if (!d.referCode) {
+                const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                db.collection('users').doc(user.uid).update({ referCode: newCode });
+            }
                         if(document.getElementById('my-ref-code')) {
                             document.getElementById('my-ref-code').innerText = d.referCode || 'Generating...';
                         }
