@@ -431,9 +431,16 @@ await db.collection('users').doc(res.user.uid).set({
                 status: 'Pending',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert("আপনার উইথড্র রিকোয়েস্ট সফলভাবে জমা হয়েছে!");
+                // উইথড্র সফল হলে ইউজারের মেইন ব্যালেন্স থেকে কয়েন কেটে নেওয়া
+                return db.collection('users').doc(currentUserId).update({
+                    coins: mainCoins - amount
+                });
+            }).then(() => {
+                alert("আপনার উইথড্র রিকোয়েস্ট সফলভাবে জমা হয়েছে এবং ব্যালেন্স আপডেট করা হয়েছে!");
                 showPage('dashboard');
-            }).catch(err => alert("এরর: " + err.message));
+            }).catch(err => {
+                alert("এরর: " + err.message);
+            });
         
         }
 
