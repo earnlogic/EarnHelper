@@ -109,13 +109,102 @@
         </div>
     </div>
 
-    <div id="dashboard">
-        <div class="card">
-            <p style="color:#888;">Main Balance</p>
-            <h1 style="color:var(--primary); font-size:40px;"><i class="fas fa-coins"></i> <span id="coins">0</span></h1>
-            <button onclick="handleWithdraw()" class="btn-main">Withdraw</button>
+<div id="dashboard">
+    <!-- ১. ইউজার প্রোফাইল ও লেভেল সেকশন -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 48px; height: 48px; background: linear-gradient(45deg, #0072ff, #00d4ff); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,212,255,0.3);">
+                <i class="fas fa-user-tie" style="color: white; font-size: 20px;"></i>
+            </div>
+            <div>
+                <h4 id="top-username" style="margin: 0; font-size: 16px; color: #fff;">User</h4>
+                <div style="display: flex; gap: 5px; align-items: center; margin-top: 2px;">
+                    <span id="user-badge" style="background: rgba(0, 212, 255, 0.1); color: var(--primary); font-size: 9px; padding: 1px 7px; border-radius: 20px; border: 0.5px solid var(--primary); font-weight: bold;">👑 BRONZE</span>
+                    <span style="color: #555; font-size: 10px;">•</span>
+                    <span style="color: #888; font-size: 10px;">LVL 1</span>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: right; background: #111; padding: 5px 12px; border-radius: 10px; border: 1px solid #222;">
+            <p style="margin: 0; font-size: 9px; color: #666; text-transform: uppercase;">Status</p>
+            <b style="color: #00ff88; font-size: 12px;">● Active</b>
         </div>
     </div>
+
+    <!-- ২. মেইন ইনকাম ওভারভিউ কার্ড -->
+    <div class="card" style="background: linear-gradient(145deg, #0d0d0d, #1a1a1a); border: 1px solid #222; position: relative; padding: 25px 20px;">
+        <p style="color: #888; font-size: 12px; margin: 0;">Available Balance</p>
+        <h1 style="color: var(--primary); font-size: 42px; margin: 5px 0; letter-spacing: -1px;">
+            <i class="fas fa-coins" style="font-size: 30px; vertical-align: middle;"></i> <span id="coins">0</span>
+        </h1>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #222;">
+            <div>
+                <p style="font-size: 10px; color: #666; margin-bottom: 3px;">Today's Earnings</p>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-chart-line" style="color: #00ff88; font-size: 12px;"></i>
+                    <span id="today-earn" style="font-size: 15px; font-weight: bold; color: #eee;">0</span>
+                </div>
+            </div>
+            <div style="border-left: 1px solid #222; padding-left: 15px;">
+                <p style="font-size: 10px; color: #666; margin-bottom: 3px;">Completed Tasks</p>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-check-circle" style="color: var(--primary); font-size: 12px;"></i>
+                    <span id="tasks-done" style="font-size: 15px; font-weight: bold; color: #eee;">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ৩. কুইক অ্যাকশন মেনু (Daily Bonus Coming Soon) -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 25px 0;">
+        <div onclick="alert('Daily Bonus Coming Soon!')" style="text-align: center; opacity: 0.6;">
+            <div style="background: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; color: #ffb700;">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <p style="font-size: 9px; margin-top: 7px; color: #888;">Daily</p>
+        </div>
+        <div onclick="showPage('refer-page')" style="text-align: center;">
+            <div style="background: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; color: #00d4ff;">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <p style="font-size: 9px; margin-top: 7px; color: #888;">Invite</p>
+        </div>
+        <div onclick="window.open('https://t.me/earnlogic_official_bot')" style="text-align: center;">
+            <div style="background: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; color: #24A1DE;">
+                <i class="fab fa-telegram-plane"></i>
+            </div>
+            <p style="font-size: 9px; margin-top: 7px; color: #888;">Support</p>
+        </div>
+        <div onclick="alert('8 Tasks available in TimeWall!')" style="text-align: center;">
+            <div style="background: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; color: #ff5e5e;">
+                <i class="fas fa-fire-alt"></i>
+            </div>
+            <p style="font-size: 9px; margin-top: 7px; color: #888;">Active</p>
+        </div>
+    </div>
+
+    <!-- ৪. মার্জিত নোটিশ সেকশন -->
+    <div style="background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-bullhorn" style="color: var(--primary); animation: bell 2s infinite;"></i>
+        <marquee style="font-size: 12px; color: #ccc; font-weight: 300;">
+            Earn Logic-এ স্বাগতম! অফারওয়াল থেকে কাজ করে আনলিমিটেড ইনকাম করুন। আপনার রেফারাল কমিশন পেতে ইউজারকে অবশ্যই অ্যাক্টিভ থাকতে হবে।
+        </marquee>
+    </div>
+
+    <button onclick="showPage('withdraw-page')" class="btn-main" style="margin-top: 25px; box-shadow: 0 10px 20px rgba(0, 114, 255, 0.2);">Withdraw Funds</button>
+</div>
+
+<style>
+@keyframes bell {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(15deg); }
+  20% { transform: rotate(-15deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(0); }
+}
+</style>
 
     <div id="legal-page">
         <div class="card">
@@ -401,6 +490,8 @@ if (refFromUrl) {
                     if(doc.exists) {
                         const d = doc.data();
                         document.getElementById('coins').innerText = d.coins || 0;
+                        document.getElementById('top-username').innerText = d.username || "User";
+
                         window.currentPendingComm = d.pendingCommission || 0;
                         document.getElementById('p-username').innerText = d.username;
                         document.getElementById('p-email').innerText = d.email;
