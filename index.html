@@ -673,24 +673,27 @@ if (refFromUrl) {
                 showPage('dashboard');
                 
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
-                    if(doc.exists) {
-                        const d = doc.data();
-                        document.getElementById('coins').innerText = d.coins || 0;
-                        document.getElementById('top-username').innerText = d.username || "User";
+            if (doc.exists) {
+                const d = doc.data();
 
-                        window.currentPendingComm = d.pendingCommission || 0;
-                        document.getElementById('p-username').innerText = d.username;
-                        document.getElementById('p-email').innerText = d.email;
-                        document.getElementById('ref-code').innerText = "REFER CODE: " + d.referCode;
-                        if (!d.referCode) {
-    const newCode = user.uid.substring(0, 6).toUpperCase();
-    db.collection('users').doc(user.uid).update({ referCode: newCode });
-                        }
-                        if(document.getElementById('my-ref-code')) {
-                            document.getElementById('my-ref-code').innerText = d.referCode || 'Generating...';
-                        }
-                    }
-                });
+                // রেফার কোড জেনারেশন (যদি না থাকে)
+                if (!d.referCode) {
+                    const newCode = user.uid.substring(0, 6).toUpperCase();
+                    db.collection('users').doc(user.uid).update({ referCode: newCode });
+                }
+
+                // নতুন প্রোফাইল ডিজাইনের আইডি অনুযায়ী ডাটা সেট
+                if(document.getElementById('p-name')) document.getElementById('p-name').innerText = d.username || "User";
+                if(document.getElementById('p-email')) document.getElementById('p-email').innerText = d.email || "No Email";
+                if(document.getElementById('p-coins')) document.getElementById('p-coins').innerText = d.coins || 0;
+                if(document.getElementById('p-ref-code')) document.getElementById('p-ref-code').innerText = d.referCode || "-------";
+                if(document.getElementById('p-total-ref')) document.getElementById('p-total-ref').innerText = d.referCount || 0;
+                
+                // আগের ড্যাশবোর্ডের আইডিগুলোও সচল রাখা
+                if(document.getElementById('top-username')) document.getElementById('top-username').innerText = d.username || "User";
+                if(document.getElementById('coins')) document.getElementById('coins').innerText = d.coins || 0;
+            }
+        });
 
                 // অ্যাডমিন সেটিংস লাইভ আপডেট
                 db.collection('settings').doc('app_control').onSnapshot(doc => {
@@ -709,6 +712,16 @@ if (refFromUrl) {
                 m.style.display = 'none';
                 document.getElementById('dashboard').style.display = 'none';
             }
+            function copyReferCode() {
+    const code = document.getElementById('p-ref-code').innerText;
+    if(code && code !== "-------") {
+        navigator.clipboard.writeText(code).then(() => {
+            alert("Refer Code Copied Success: " + code);
+        });
+    } else {
+        alert("Please wait, loading code...");
+    }
+}
         });
 
         function logout() { auth.signOut().then(() => location.reload()); }
