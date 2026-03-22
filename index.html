@@ -38,6 +38,164 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0d0d0d; display: none; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 9999; }
         .nav-item { text-align: center; flex: 1; cursor: pointer; color: #666; font-size: 11px; }
         .nav-item.active { color: var(--primary); }
+        /* --- New Profile Section Styles --- */
+#profile-page {
+    background-color: #0d0d0d; /* ডার্ক ব্যাকগ্রাউন্ড */
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(145deg, #1a1a1a, #111);
+    border-radius: 20px;
+    border: 1px solid #222;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(45deg, #0072ff, #00d4ff);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.2);
+    border: 3px solid #0d0d0d;
+}
+
+.profile-avatar i {
+    font-size: 40px;
+    color: white;
+}
+
+.profile-name {
+    margin: 0;
+    font-size: 22px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.profile-email {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #888;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: #111;
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #222;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.stat-card:hover {
+    border-color: #00d4ff;
+    background: #151515;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 24px;
+    color: #fff;
+    font-weight: bold;
+}
+
+.stat-value i {
+    color: #FFD700; /* গোল্ডেন কালার কয়েনের জন্য */
+    margin-right: 5px;
+}
+
+.refer-section {
+    background: rgba(0, 212, 255, 0.03);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px dashed #333;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.refer-label {
+    font-size: 12px;
+    color: #00d4ff;
+    margin-bottom: 10px;
+}
+
+.refer-code-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #000;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #222;
+}
+
+.refer-code-text {
+    font-size: 20px;
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.copy-btn {
+    background: #00d4ff;
+    color: #000;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    transition: 0.3s;
+}
+
+.copy-btn:hover {
+    background: #0072ff;
+    color: white;
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 2px solid #333;
+    color: #ff5e5e;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.logout-btn:hover {
+    background: #ff5e5e;
+    color: white;
+    border-color: #ff5e5e;
+        }
     </style>
 </head>
 <body>
@@ -82,6 +240,34 @@
         <button class="menu-btn" onclick="window.open('https://t.me/earnlogic_official_bot')">9. Support (TG)</button>
         <button class="menu-btn" onclick="logout()" style="color:red;">10. Logout</button>
     </div>
+    <!-- নতুন প্রোফাইল পেজ ডিজাইন -->
+<div id="profile-page" class="page" style="display:none; padding: 15px;">
+    
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <h2 class="profile-name" id="p-name">Loading...</h2>
+        <p class="profile-email" id="p-email">user@example.com</p>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Available Balance</div>
+            <div class="stat-value">
+                <i class="fas fa-coins"></i><span id="p-coins">0</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Referred</div>
+            <div class="stat-value">
+                <i class="fas fa-users" style="color: #00d4ff;"></i><span id="p-total-ref">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="refer-section">
+        <div class
 
     <div class="auth-container" id="auth-ui">
         <div class="card" id="signup-form">
