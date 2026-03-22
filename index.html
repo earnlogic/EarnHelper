@@ -514,6 +514,10 @@
         <div class="nav-item" onclick="showPage('profile-page')"><i class="fas fa-user"></i>Profile</div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
     <script>
         // ৬. ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
@@ -524,35 +528,46 @@
             messagingSenderId: "254063437159",
             appId: "1:254063437159:web:a8e118c33c924bd48c3bc2"
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const db = firebase.firestore();
         let currentUserId = null;
 
-        // ১. লিঙ্ক থেকে অটো রেফার কোড হ্যান্ডলিং
+        // ১. অটো রেফার কোড হ্যান্ডলিং (URL parameter theke)
         const urlParams = new URLSearchParams(window.location.search);
         const refFromUrl = urlParams.get('ref');
-
         if (refFromUrl) {
             setTimeout(() => {
                 const refInput = document.getElementById('s-refer');
                 if (refInput) {
                     refInput.value = refFromUrl.toUpperCase();
+                    console.log("Refer code auto-filled: " + refFromUrl);
                 }
             }, 1200);
         }
 
-        // ২. ইউজার ইন্টারফেস কন্ট্রোল
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        // ২. ইন্টারফেস কন্ট্রোল (Sidebar, Pages, Legal)
+        function toggleSidebar() { 
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar) sidebar.classList.toggle('active'); 
+        }
+
         function toggleDrop(id) { 
             const d = document.getElementById(id); 
-            d.style.display = d.style.display === 'block' ? 'none' : 'block'; 
+            if(d) d.style.display = d.style.display === 'block' ? 'none' : 'block'; 
         }
+
         function toggleAuth() {
             const l = document.getElementById('login-form');
             const s = document.getElementById('signup-form');
-            l.style.display = l.style.display==='none'?'block':'none';
-            s.style.display = s.style.display==='none'?'block':'none';
+            if(l && s) {
+                l.style.display = l.style.display === 'none' ? 'block' : 'none';
+                s.style.display = s.style.display === 'none' ? 'block' : 'none';
+            }
         }
 
         function showPage(id) {
@@ -563,7 +578,8 @@
             });
             const target = document.getElementById(id);
             if(target) target.style.display = 'block';
-            if(document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar && sidebar.classList.contains('active')) sidebar.classList.remove('active');
         }
 
         function showLegal(type) {
@@ -572,18 +588,23 @@
                 policy: { t: "Privacy Policy", c: "Your privacy and data are safe with us." },
                 halal: { t: "Halal Guidelines", c: "We ensure 100% Halal earning methods." }
             };
-            document.getElementById('l-title').innerText = data[type].t;
-            document.getElementById('l-content').innerText = data[type].c;
-            showPage('legal-page');
+            const titleEl = document.getElementById('l-title');
+            const contentEl = document.getElementById('l-content');
+            if(titleEl && contentEl) {
+                titleEl.innerText = data[type].t;
+                contentEl.innerText = data[type].c;
+                showPage('legal-page');
+            }
         }
 
-        // ৩. রেজিস্ট্রেশন ও লগইন ফাংশন
+        // ৩. রেজিস্ট্রেশন (Refer Bonus & Commission logic shoho)
         async function registerUser() {
             const u = document.getElementById('s-user').value;
             const e = document.getElementById('s-email').value;
             const p = document.getElementById('s-pass').value;
             const refBy = document.getElementById('s-refer').value.trim().toUpperCase();
-            if(!u || !e || !p) return alert("সবগুলো ঘর পূরণ করুন!");
+            
+            if(!u || !e || !p) { alert("সবগুলো ঘর পূরণ করুন!"); return; }
             
             try {
                 const res = await auth.createUserWithEmailAndPassword(e, p);
@@ -593,7 +614,7 @@
                 await db.collection('users').doc(res.user.uid).set({
                     username: u,
                     email: e,
-                    coins: 0,
+                    coins: 0, 
                     referCode: res.user.uid.substring(0,6).toUpperCase(),
                     referredBy: refBy || null,
                     commissionExpiry: expiryDate.toISOString(),
@@ -603,109 +624,181 @@
                 if (refBy) {
                     const referrerSnap = await db.collection('users').where('referCode', '==', refBy).get();
                     if (!referrerSnap.empty) {
-                        await db.collection('users').doc(referrerSnap.docs[0].id).update({
+                        const referrerDoc = referrerSnap.docs[0];
+                        await db.collection('users').doc(referrerDoc.id).update({
                             coins: firebase.firestore.FieldValue.increment(10)
                         });
                     }
                 }
-                alert("রেজিস্ট্রেশন সফল!");
-            } catch(err) { alert(err.message); }
+                alert("রেজিস্ট্রেশন সফল হয়েছে!");
+            } catch(err) { alert("ভুল: " + err.message); }
         }
 
+        // ৪. লগইন এবং পাসওয়ার্ড রিসেট
         async function loginUser() {
             const e = document.getElementById('l-email').value;
             const p = document.getElementById('l-pass').value;
-            if(!e || !p) return alert("ইমেইল ও পাসওয়ার্ড দিন!");
+            if(!e || !p) { alert("ইমেইল এবং পাসওয়ার্ড দিন!"); return; }
             try {
                 await auth.signInWithEmailAndPassword(e, p);
                 alert("লগইন সফল!");
-            } catch(err) { alert(err.message); }
+            } catch(err) { alert("লগইন ব্যর্থ: " + err.message); }
         }
 
-        // ৪. রিয়েল-টাইম ডাটা আপডেট (লগইন চেক)
+        function resetPass() {
+            const e = document.getElementById('l-email').value;
+            if(!e) { alert("আগে ইমেইলটি লিখুন!"); return; }
+            auth.sendPasswordResetEmail(e).then(() => alert("রিসেট লিঙ্ক ইমেইলে পাঠানো হয়েছে।")).catch(err => alert(err.message));
+        }
+
+        // ৫. রিয়েল-টাইম ডাটা আপডেট (Login check)
         auth.onAuthStateChanged(user => {
+            const authUI = document.getElementById('auth-ui');
+            const botNav = document.getElementById('bot-nav');
+            const mTrig = document.getElementById('m-trig');
+
             if(user) {
                 currentUserId = user.uid;
-                document.getElementById('auth-ui').style.display = 'none';
-                document.getElementById('bot-nav').style.display = 'flex';
-                document.getElementById('m-trig').style.display = 'block';
+                if(authUI) authUI.style.display = 'none';
+                if(botNav) botNav.style.display = 'flex';
+                if(mTrig) mTrig.style.display = 'block';
                 showPage('dashboard');
-
+                
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
-                    if(doc.exists) {
+                    if (doc.exists) {
                         const d = doc.data();
-                        // প্রোফাইল পেজ ডাটা
-                        if(document.getElementById('p-name')) document.getElementById('p-name').innerText = d.username || "User";
-                        if(document.getElementById('p-email')) document.getElementById('p-email').innerText = d.email;
-                        if(document.getElementById('p-coins')) document.getElementById('p-coins').innerText = d.coins || 0;
-                        if(document.getElementById('p-ref-code')) document.getElementById('p-ref-code').innerText = d.referCode || "---";
-                        if(document.getElementById('my-ref-code')) document.getElementById('my-ref-code').innerText = d.referCode || "---";
+                        const updateText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
                         
-                        // ড্যাশবোর্ড ডাটা
-                        if(document.getElementById('top-username')) document.getElementById('top-username').innerText = d.username || "User";
-                        if(document.getElementById('coins')) document.getElementById('coins').innerText = d.coins || 0;
+                        updateText('p-name', d.username || "User");
+                        updateText('p-email', d.email || "");
+                        updateText('p-coins', d.coins || 0);
+                        updateText('p-ref-code', d.referCode || "---");
+                        updateText('p-total-ref', d.referCount || 0);
+                        updateText('top-username', d.username || "User");
+                        updateText('coins', d.coins || 0);
+                        updateText('my-ref-code', d.referCode || "---");
+                    }
+                });
+
+                db.collection('settings').doc('app_control').onSnapshot(doc => {
+                    if(doc.exists) {
+                        const data = doc.data();
+                        window.coinRate = data.rate; 
+                        const nBoard = document.getElementById('notice-board');
+                        if(nBoard) nBoard.innerText = data.notice;
                     }
                 });
             } else {
                 currentUserId = null;
-                document.getElementById('auth-ui').style.display = 'block';
-                document.getElementById('bot-nav').style.display = 'none';
-                document.getElementById('m-trig').style.display = 'none';
+                if(authUI) authUI.style.display = 'block';
+                if(botNav) botNav.style.display = 'none';
+                if(mTrig) mTrig.style.display = 'none';
             }
         });
 
         function logout() { auth.signOut().then(() => location.reload()); }
 
-        // ৫. উইথড্র সিস্টেম ও ক্যালকুলেটর
+        // ৬. উইথড্র সিস্টেম এবং ক্যালকুলেটর (Full logic)
         let selectedMethod = "";
         function setMethod(method) {
             selectedMethod = method;
-            document.getElementById('input-section').style.display = 'block';
+            const inputSec = document.getElementById('input-section');
+            if(inputSec) inputSec.style.display = 'block';
             const info = document.getElementById('method-info');
-            if(method === 'Bkash' || method === 'Nagad') info.innerText = "Min: 300 Coins. Fee: 10%";
-            else if(method === 'Binance') info.innerText = "Min: 140 Coins. Fee: 10%";
-            else if(method === 'Recharge') info.innerText = "Min: 200 Coins. Fee: 5%";
+            if(info) {
+                if(method === 'Bkash' || method === 'Nagad') info.innerText = "Min: 300 Coins. Fee: 10% + Charge.";
+                else if(method === 'Binance') info.innerText = "Min: 140 Coins. Fee: 10%.";
+                else if(method === 'Recharge') info.innerText = "Min: 200 Coins. Fee: 5%.";
+            }
         }
 
-        document.getElementById('w-amount').addEventListener('input', function() {
-            const coins = parseInt(this.value) || 0;
-            let receive = 0; let unit = "TK";
-            if(selectedMethod === 'Bkash' || selectedMethod === 'Nagad') receive = (coins * 0.9 / 10).toFixed(2);
-            else if(selectedMethod === 'Recharge') receive = (coins * 0.95 / 10).toFixed(2);
-            else if(selectedMethod === 'Binance') { receive = (coins * 0.9 / 1200).toFixed(3); unit = "USDT"; }
-            document.getElementById('receive-amount').innerText = receive + " " + unit;
-        });
+        const amountInput = document.getElementById('w-amount');
+        if(amountInput) {
+            amountInput.addEventListener('input', function() {
+                const coins = parseInt(this.value) || 0;
+                let receive = 0; let chargeTxt = ""; let unit = "TK";
+
+                if(selectedMethod === 'Bkash' || selectedMethod === 'Nagad') {
+                    let webCharge = Math.max(20, Math.floor(coins * 0.1)); 
+                    let finalCoins = coins - webCharge;
+                    if(coins <= 2000) finalCoins -= 50; 
+                    receive = (finalCoins / 10).toFixed(2);
+                    chargeTxt = `Web: ${webCharge/10} TK | Fee: ${coins<=2000?5:0} TK`;
+                } 
+                else if(selectedMethod === 'Recharge') {
+                    let webCharge = Math.max(10, Math.floor(coins * 0.05));
+                    receive = ((coins - webCharge) / 10).toFixed(2);
+                    chargeTxt = `Web Fee: ${webCharge/10} TK`;
+                }
+                else if(selectedMethod === 'Binance') {
+                    let webCharge = Math.floor(coins * 0.1);
+                    receive = ((coins - webCharge) / 1200).toFixed(3);
+                    unit = "USDT";
+                    chargeTxt = `Web Fee: 10%`;
+                }
+                const receiveEl = document.getElementById('receive-amount');
+                const chargeEl = document.getElementById('charge-details');
+                if(receiveEl) receiveEl.innerText = (receive > 0 ? receive : "0.00") + " " + unit;
+                if(chargeEl) chargeEl.innerText = chargeTxt;
+            });
+        }
 
         async function processWithdraw() {
             const amount = parseInt(document.getElementById('w-amount').value);
             const number = document.getElementById('w-number').value;
-            if(!selectedMethod || amount < 100 || !number) return alert("সঠিক তথ্য দিন!");
-            
+            if (!currentUserId) return alert("লগইন করুন!");
+            if (!selectedMethod || !amount || amount < 100 || !number) return alert("সঠিক তথ্য দিন!");
+
             try {
                 const userRef = db.collection('users').doc(currentUserId);
                 const doc = await userRef.get();
-                if(doc.data().coins >= amount) {
+                const mainCoins = doc.data().coins || 0;
+
+                if (mainCoins >= amount) {
                     await db.collection('withdrawals').add({
                         uid: currentUserId,
                         username: doc.data().username,
                         method: selectedMethod,
-                        amount: amount,
+                        amount: amount, 
                         account: number,
                         status: "Pending",
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     await userRef.update({ coins: firebase.firestore.FieldValue.increment(-amount) });
-                    alert("উইথড্র সফল হয়েছে!");
-                    location.reload();
-                } else { alert("পর্যাপ্ত কয়েন নেই!"); }
-            } catch(e) { alert("এরর হয়েছে!"); }
+                    alert("সফল হয়েছে!");
+                    location.reload(); 
+                } else { alert("পর্যাপ্ত কয়েন নেই।"); }
+            } catch (error) { alert("সার্ভারে সমস্যা হয়েছে।"); }
         }
 
+        // ৭. রেফার সিস্টেম (Copy & Commission)
         function copyRef() {
-            const code = document.getElementById('p-ref-code').innerText;
-            if(!code || code === "---") return alert("অপেক্ষা করুন...");
-            const link = "https://earnlogic.github.io/?ref=" + code;
-            navigator.clipboard.writeText(link).then(() => alert("লিঙ্ক কপি হয়েছে!"));
+            const codeEl = document.getElementById('p-ref-code') || document.getElementById('my-ref-code');
+            const code = codeEl ? codeEl.innerText : "";
+            if(!code || code === "---") { alert("অপেক্ষা করুন..."); return; }
+            const refLink = "https://earnlogic.github.io/?ref=" + code;
+            navigator.clipboard.writeText(refLink).then(() => alert("Link Copied: " + refLink));
+        }
+
+        async function giveCommission(workerId, rewardAmount) {
+            try {
+                const workerRef = db.collection('users').doc(workerId);
+                const doc = await workerRef.get();
+                const data = doc.data();
+                if (data && data.referredBy) {
+                    const now = new Date();
+                    const expiry = new Date(data.commissionExpiry);
+                    if (now < expiry) {
+                        const bonus = rewardAmount * 0.03;
+                        const refSnap = await db.collection('users').where('referCode', '==', data.referredBy).get();
+                        if (!refSnap.empty) {
+                            await db.collection('users').doc(refSnap.docs[0].id).update({
+                                coins: firebase.firestore.FieldValue.increment(bonus)
+                            });
+                        }
+                    }
+                }
+            } catch (e) { console.error(e); }
         }
     </script>
 </body>
