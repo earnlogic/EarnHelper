@@ -266,8 +266,16 @@
         </div>
     </div>
 
-    <div class="refer-section">
-        <div class
+    <div class="refer-label">Your Referral Code</div>
+        <div class="refer-code-box">
+            <span class="refer-code-text" id="p-ref-code">---</span>
+            <button class="copy-btn" onclick="copyRef()">COPY</button>
+        </div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="margin-top: 20px;">
+        <i class="fas fa-sign-out-alt"></i> Logout Account
+    </button>
+</div>
 
     <div class="auth-container" id="auth-ui">
         <div class="card" id="signup-form">
@@ -400,13 +408,7 @@
         </div>
     </div>
 
-    <div id="profile-page">
-        <div class="card">
-            <h3 id="p-username">...</h3>
-            <p id="p-email" style="font-size:12px; color:#666;"></p>
-            <div id="ref-code" style="background:#000; padding:10px; border:1px dashed var(--primary); color:var(--primary); margin-top:15px;">...</div>
-        </div>
-    </div>
+
 <div id="refer-page" style="display:none; padding:20px;">
         <div class="card">
             <h3 style="color:var(--primary);">Refer & Earn</h3>
